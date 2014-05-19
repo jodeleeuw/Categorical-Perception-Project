@@ -1,0 +1,87 @@
+<html>
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script src=" http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js" type="text/javascript"></script>
+
+<style>
+
+#target { width: 1000px; height: 1000px; margin: 0 auto 0 auto; }
+
+#sort_arena { width:800px; height: 800px; border: 1px solid black; margin: auto; position: relative;}
+
+img { width: 150px; height: 150px; border: 1px solid black; }
+
+p { text-align: center; font-size: 18px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;}
+</style>
+
+</head>
+
+
+<body>
+
+<div id="target">
+	<p>Drag the items below to sort them.</p>
+	<div id="sort_arena">
+	</div>
+</div>
+
+</body>
+
+<script>
+
+var stims = [];
+
+for(var x=0.2; x <= 0.8; x = x + 0.2) {
+	for( var y = 0.1; y <= 0.9; y = y + 0.2) {
+		stims.push("img/HD_"+x.toFixed(1)+"_"+y.toFixed(1)+"_.jpg");
+	}
+}
+
+var unused_stims = shuffle(stims);
+
+function random_coordinate(max_width, max_height)
+{
+	var rnd_x = Math.floor(Math.random()*(max_width-1))
+	
+	var rnd_y = Math.floor(Math.random()*(max_height-1));
+	
+	return {x: rnd_x, y: rnd_y};
+}
+
+function add_stim_to_unsorted(stim_path)
+{
+	var coords = random_coordinate(600,600);
+	$("#sort_arena").append($('<img>',
+		{
+			"src": stim_path,
+			"class": "draggable_stim",
+			"css": {
+				"position": "absolute",
+				"top": coords.y,
+				"left": coords.x
+			}
+		}));
+}
+
+for(var i=0;i<unused_stims.length; i++)
+{
+	add_stim_to_unsorted(unused_stims[i]);
+}
+
+$('.draggable_stim').draggable({containment: "#sort_arena", scroll: false, stack: ".draggable_stim" });
+
+
+function shuffle(array) {
+    var tmp, current, top = array.length;
+
+    if(top) while(--top) {
+        current = Math.floor(Math.random() * (top + 1));
+        tmp = array[current];
+        array[current] = array[top];
+        array[top] = tmp;
+    }
+
+    return array;
+}
+
+</script>

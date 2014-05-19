@@ -1,0 +1,768 @@
+<!doctype html>
+<!--
+
+	Compression / Expansion Study #3
+	January 2013
+
+-->
+<html>
+<head>
+
+<!-- Load required jquery libraries -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script src=" http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js" type="text/javascript"></script>
+<!-- Load the jspsych libraries -->
+<script src="http://perceptsconcepts.psych.indiana.edu/jspsych/v1.50/jspsych.js" type="text/javascript"></script>
+<script src="http://perceptsconcepts.psych.indiana.edu/jspsych/v1.50/plugins/jspsych-text.js" type="text/javascript"></script>
+<script src="http://perceptsconcepts.psych.indiana.edu/jspsych/v1.50/plugins/jspsych-singleimage-keyresponse.js" type="text/javascript"></script>
+<script src="http://perceptsconcepts.psych.indiana.edu/jspsych/v1.50/plugins/jspsych-adaptive-category-train.js" type="text/javascript"></script>
+<script src="http://perceptsconcepts.psych.indiana.edu/jspsych/v1.50/plugins/jspsych-xab.js" type="text/javascript"></script>
+<script src="http://perceptsconcepts.psych.indiana.edu/jspsych/v1.50/plugins/jspsych-similarity.js" type="text/javascript"></script>
+<script src="http://perceptsconcepts.psych.indiana.edu/jspsych/v1.50/plugins/jspsych-html.js" type="text/javascript"></script>
+<script src="http://perceptsconcepts.psych.indiana.edu/jspsych/v1.50/plugins/jspsych-call-function.js" type="text/javascript"></script>
+
+<!-- Load imageloader.js, turk.js -->
+<script src="../common/jquery.imageloader.js" type="text/javascript"></script>
+<script src="../common/turk.js" type="text/javascript"></script>
+
+<!-- Link (import) the stylesheet for your experiment -->
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+
+<style>
+#target { width: 1000px; margin-left: auto; margin-right: auto; margin-top: 50px; text-align: center; }
+img { margin-left: 30px; margin-right: 30px; width: 150px; height: 150px;}
+body { background: #fff; margin:0;padding:0;}
+
+#consent { width: 800px; margin-left:auto; margin-right: auto; margin-top: 30px; background: white; padding: 40px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;}
+#consent h1, h2 { font-size: 16px; text-align: center;}
+#consent h2, h3 { font-size: 14px; }
+
+button { margin-left: auto; margin-right: auto; }
+
+#target p { color: black;  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; }
+
+#cf_prompt { font-size: 18px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;}
+
+#instructions, #adaptive_category_progress {width: 500px; margin-left: auto; margin-right: auto; text-align: left; color: black; font-size: 14px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; }
+#next { width: 75px; height: 40px; margin-top:10px; }
+
+#code { background: #ddd; border: 1px solid #999; width: 400px; margin-left:auto; margin-right: auto; margin-top:30px; padding: 40px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;}
+#code h3 { color: #f00; font-family: 'Arial', sans-serif; font-size: 20px;}
+
+#turk_error { width:100%; height: 80px; background: #222; border-bottom: 2px solid #999; text-align: center; font-size: 18px; color: white; font-size: 18px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; padding-top: 20px;}
+
+#sd_prompt {width: 500px; margin-left: auto; margin-right: auto; margin-top: 250px; text-align: center; color: black; font-size: 18px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; }
+
+em { font-weight: bold; font-style: normal; }
+
+#load p { width: 600px; margin-left: auto; margin-right: auto; margin-top: 250px; text-align: center; color: black; font-size: 22px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; }
+
+#slider { width: 500px; margin: 50px auto 0px auto; }
+
+#slider_labels { width: 500px; margin: 0px auto 40px auto; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;}
+
+.slider_left { float: left; }
+.slider_right { float: right; }
+
+#sort_arena { border: 1px solid black; margin: auto; }
+
+.draggable_stim { border: 1px solid black; margin: 0}
+
+#progress { height: 20px; padding: 10px; background: #ccc; border-bottom: 1px solid #999; }
+
+#progressbar { margin: auto; width: 300px; height: 20px; margin-top:  }
+
+#progresscontainer { width: 500px; margin: auto; }
+
+#progress p { margin: 0; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; font-size: 14px; float: left; }
+
+</style>
+</head>
+
+<!-- Begin the page -->
+<body>
+<!-- TURK ERROR? -->
+<div id="turk_error">
+	<p>Error: There was an error retrieving your mturk worker ID. If you have javascript cookies disabled, you can try enabling them, returning this HIT, and accepting a new HIT. Please close this window, as you will be unable to complete the experiment.</p>
+</div>
+<!-- LOADING -->
+<div id="load">
+	<p>The experiment is loading. It should begin momentarily.</p>
+</div>
+<!-- CONSENT FORM -->
+<div id="consent">
+	<p>This experiment is being conducted at Vassar College. It consists of several tasks, each of which involves viewing various objects and making simple judgments about them. The study takes approximately 15 minutes to complete. Participation poses minimal risk, meaning the risk is no greater than that of normal, everyday activities. Your anonymous data, identified only by your Mechanical Turk worker ID, will be used for research purposes.  For your participation, you will receive a small payment of $0.50 upon completion of the experiment. You are free to stop the experiment by closing your browser window at any time. If you have any questions, you can contact Prof. Jan Andrews at andrewsj@vassar.edu.</p>
+	<p>By clicking "I agree," you affirm that you are at least 18 years of age, which is the minimum age to participate in this study.</p>
+	<p><input type="checkbox" id="consent_checkbox" />I agree to take part in this study.</p>	
+	<button type="button" onclick="this.blur(); start_experiment();">Start Experiment</button>
+</div>
+<!-- END CONSENT FORM -->
+<div id="progress">
+	<div id="progresscontainer">
+		<p>Experiment progress:</p>
+		<div id="progressbar"></div>
+	</div>
+</div>
+<div id="target">
+</div>
+</body>
+
+<script type="text/javascript">
+// for testing purposes!
+var debug = false;
+
+if(debug){
+	turk.workerId = "TESTING-"+Math.floor(Math.random()*100000);
+}
+
+$("#progress").hide();
+$("#target").hide();
+$("#turk_error").hide();
+$("#consent").hide();
+
+// Instructions /////
+var start_train_instructions = '<div id="instructions"> \
+	<p>In this experiment, you will be trained to identify two kinds of alien cells. After training, you will \
+	be tested on your ability to recognize different kinds of cells.</p> \
+	<p>There are three parts to this experiment: a training task, an identification task, and a sorting task. The experiment should take approximately 30 minutes \
+	to complete, but it will depend on how quickly you are able to complete the training task.</p> \
+	<p>To get started, press ENTER.</p></div>';
+	
+var start_train_instructions_part_2 = '<div id="instructions"> \
+	<p>The first part of this experiment is to complete training. You will be shown a cell and asked <em>Is this a Wij (W) or a Pag (P)?</em></p> \
+	<p>To indicate that the cell is a Wij, <em>press W</em> on the keyboard.</p> \
+	<p>To indicate that the cell is a Pag, <em>press P</em> on the keyboard.</p> \
+	<p>Initially you\'ll need to guess, but you should eventually learn to distinguish the two types of cell.</p> \
+	<p>The training may be very difficult. Please ensure that you are able to devote your full attention to training. If you are unable to do so, \
+	we strongly encourage you not to continue with the experiment.</p>\
+	<p>Do you wish to proceed? If so, press ENTER to continue. If you do not want to complete the experiment, please close your browser window and return the HIT.</p></div>';
+	
+
+var start_train_instructions_part_3 = '<div id="instructions"> \
+	<p>During training, if you correctly categorize an item in four consecutive rounds, the item will be marked as complete. When you have \
+	completed all of the items, training will be finished and you will receive a $0.50 bonus for completing training. In order to make progress in training, you need to maintain at least a 60% overall accuracy rate.\
+	If you fall below 60% accuracy for a round, then no items will be marked as complete for that round. If you fall below 60% accuracy for five consecutive rounds,\
+	then training will end and you will not receive the bonus payment, but you will still receive the basic payment.</p>\
+	<p>Do you wish to proceed? If so, press ENTER to continue. If you do not want to complete the experiment, please close your browser window and return the HIT.</p></div>';
+	
+var progress_instructions = '<div id="instructions"> \
+		<p>The bar above will show you your progress throughout the remainder of the experiment.</p> \
+		<p>Press ENTER to continue.</p>';
+		
+var categorize_instructions = '<div id="instructions"> \
+		<p>The next part of the experiment is similar to training, except no feedback will be given. You will see a cell on the screen and be asked <em>Is this a Wij (W) or a Pag (P)?</em></p> \
+		<p>To indicate that the cell is a Wij, <em>press W</em> on the keyboard.</p> \
+		<p>To indicate that the cell is a Pag, <em>press P</em> on the keyboard.</p> \
+		<p>There are 56 cells to identify.</p>\
+		<p>Press ENTER to begin.</p>';		
+
+	
+var comp_xab_instructions = '<div id="instructions"> \
+		<p>In this part of the experiment, you will see a single alien cell appear on the screen. It will disappear \
+		and be replaced by two cells. One of these cells will be the same as the first one. Your task is to identify which \
+		cell is the same as the first one.</p> \
+		<p>To indicate that the cell on the left is the correct cell, <em>press Z</em> on the keyboard.</p> \
+		<p>To indicate that the cell on the right is the correct cell, <em>press M</em> on the keyboard.</p> \
+		<p>There are 140 trials to complete. When you are ready to begin, press ENTER.</p></div>';
+var comp_sim_instructions = '<div id="instructions"> \
+		<p>In this part of the experiment, you will be shown two alien cells, one at a time. After both cells have been seen \
+		you will be asked to rate how similar the cells are by moving a slider on the screen.</p> \
+		<p>There are 140 pairs of cells. When you are ready to begin, press ENTER.</p></div>';
+var sort_instructions = '<div id="instructions"> \
+		<p>In this part of the experiment, you will be shown all of the alien cells together. Use the mouse to drag and drop the \
+		cells into groups, putting cells that belong together in the same group.  Please make sure that some white space separates your groups. It is OK for cells to be overlapping if they are part of the same group. \
+		When you are finished, press the done button at the bottom of the screen.</p> \
+		<p>When you are ready to begin the task, press ENTER.</p></div>';
+
+
+// End Instructions //////
+
+// CONDITION ASSIGNMENT //////////////////////////
+var condition = {};
+
+if(turk.previewMode || turk.workerId == "" || turk.workerId == undefined)
+{
+	$("#turk_error").show();
+} else {
+	var per_condition = 20;
+
+	var targets = {
+		/*"TRAIN-XAB-HD": per_condition
+		"TRAIN-SIM-HD": per_condition,
+		"TRAIN-XAB-LD": per_condition,
+		"TRAIN-SIM-LD": per_condition,*/
+		"CONTROL-XAB-HD": per_condition,
+		"CONTROL-SIM-HD": per_condition,
+		"CONTROL-XAB-LD": per_condition,
+		"CONTROL-SIM-LD": per_condition
+	}
+
+	$.ajax({
+		type: 'post',
+		cache: false,
+		url: '../common/assign_condition.php',
+		data: {"table": "co_ex_exp_3_subjects", "unique":"mturk_id", "condition_col":"exp_condition", "targets": JSON.stringify(targets)},
+		success: function(data) { 
+			var cond = data;
+		
+			// write the subject to the subjects table
+			$.ajax({
+				type: 'post',
+				cache: false,
+				url: '../common/write_subject_mysql.php',
+				data: {"table": "co_ex_exp_3_subjects", "data": JSON.stringify({
+								"mturk_id": turk.workerId, 
+								"exp_condition": cond})
+						},
+				success: function(data_new) { }
+			});
+			
+			// fill out stim object
+			var cond_arr = cond.split("-");
+			condition = {"stim": cond_arr[2], "test": cond_arr[1], "train": cond_arr[0]};
+			
+			create_experiment();
+		}
+	});
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/// BUILD EXPERIMENT ////
+
+// We can only do this after condition assignment is complete, which is why this is wrapped in a function call ///
+
+var experiment_structure = []; // this needs to have global scope.
+
+function create_experiment() {
+
+	// Stimuli //////
+
+	// Building a list of all the images in the experiment (by path)
+	// and then preloading them so they will display "instantly"
+
+	var list_of_training_images = [];
+	var list_of_novel_images = [];
+
+	// load the training stimuli
+	if(condition.stim == "HD"){
+		for(var x=0.125; x <= 0.875; x = x + 0.15) {
+			for( var y = 0.125; y <= 0.875; y = y + 0.15) {
+				list_of_training_images.push("img/HD_"+x.toFixed(4)+"_"+y.toFixed(4)+"_.jpg");
+			}
+		}
+	} else {
+		for(var x=0.3125; x <= 0.6875; x = x + 0.075) {
+			for( var y = 0.3125; y <= 0.6875; y = y + 0.075) {
+				list_of_training_images.push("img/LD_"+x.toFixed(4)+"_"+y.toFixed(4)+"_.jpg");
+			}
+		}
+	}
+
+	// load the novel stimuli
+	if(condition.stim == "HD"){
+		var xcoords = [0.2, 0.35, 0.65, 0.8];
+		for(var x=0; x < xcoords.length; x++) {
+			for( var y = 0.2; y <= 0.8; y = y + 0.15) {
+				list_of_novel_images.push("img/HD_Novel_"+xcoords[x].toFixed(4)+"_"+y.toFixed(4)+"_.jpg");
+			}
+		}
+	} else {
+		var xcoords = [0.35, 0.425, 0.575, 0.65];
+		for(var x=0; x < xcoords.length; x++) {
+			for( var y = 0.35; y <= 0.65; y = y + 0.075) {
+				list_of_novel_images.push("img/LD_Novel_"+xcoords[x].toFixed(4)+"_"+y.toFixed(4)+"_.jpg");
+			}
+		}
+	}
+
+	var list_of_images = list_of_training_images.concat(list_of_novel_images);
+
+	$({}).imageLoader({
+		images: list_of_images,
+		async: true,
+		allcomplete: function() { $("#load").hide(); $("#consent").show(); }
+	});
+	// PRELOAD COMPLETE
+
+	// Build blocks
+
+	// TRAINING BLOCKS /////////
+
+	var train_prompt = "<p id='cf_prompt'>Is this a Wij (W) or a Pag (P)?</p>"
+	var correct_answer_text = "<p id='cf_prompt'><em>Correct</em>. This is a &ANS&.</p>";
+	var incorrect_answer_text = "<p id='cf_prompt'><em>Wrong</em>. This is a &ANS&.</p>";
+
+	var training_items = list_of_training_images.slice(0);
+	if(debug){
+		/*training_items = ["img/HD_0.2_0.1_.jpg","img/HD_0.2_0.1_.jpg","img/HD_0.2_0.1_.jpg",
+							"img/HD_0.8_0.9_.jpg","img/HD_0.8_0.9_.jpg","img/HD_0.8_0.9_.jpg"];*/
+	}
+	var correct_key_resp = get_answer(training_items);
+	var text_answers = get_text_answer(training_items);
+	
+	// categorization after training
+	var categorization_stimuli = shuffle(list_of_images.slice(0));
+	var min_training_correct = 4;
+	if(debug) { min_training_correct = 0; }
+
+	/// END TRAINING BLOCKS
+
+
+
+	// Create SIM/XAB blocks
+
+	// enumerate all pairs that are 1, 2, and 3 city-block units apart.
+
+	// pag-pag comparisons
+	var pairs_pp_1 = [];
+	var pairs_pp_2 = [];
+	var pairs_pp_3 = [];
+
+	// wij-wij comparisons
+	var pairs_ww_1 = [];
+	var pairs_ww_2 = [];
+	var pairs_ww_3 = [];
+
+	// pag-wij comparisons
+	var pairs_pw_1 = [];
+	var pairs_pw_2 = [];
+	var pairs_pw_3 = [];
+
+	// novel pag-pag comparisons
+	var pairs_novel_pp_1 = [];
+	var pairs_novel_pp_2 = [];
+	var pairs_novel_pp_3 = [];
+
+	// novel wij-wij comparisons
+	var pairs_novel_ww_1 = [];
+	var pairs_novel_ww_2 = [];
+	var pairs_novel_ww_3 = [];
+
+	// novel pag-wij comparisons
+	var pairs_novel_pw_1 = [];
+	var pairs_novel_pw_2 = [];
+	var pairs_novel_pw_3 = [];
+
+
+	var list_of_stims = list_of_training_images;
+	var list_of_novel_stims = list_of_novel_images;
+
+	// this for loop create all of the possible training pairs for comparison
+	for(var i=0; i < list_of_stims.length; i++)
+	{
+		for(var j=0; j < list_of_stims.length; j++)
+		{
+			var dist = get_distance(list_of_stims[i], list_of_stims[j]);
+			if(dist <= 3 && dist > 0)
+			{
+				var cat1 = get_category(list_of_stims[i]);
+				var cat2 = get_category(list_of_stims[j]);
+				
+				if(cat1 != cat2)
+				{
+					switch(dist){
+						case 1:
+							pairs_pw_1.push([list_of_stims[i],list_of_stims[j]]);
+							break;
+						case 2:
+							pairs_pw_2.push([list_of_stims[i],list_of_stims[j]]);
+							break;
+						case 3:
+							pairs_pw_3.push([list_of_stims[i],list_of_stims[j]]);
+							break;
+					}
+				} else {
+					if(cat1 == "Pag")
+					{
+						switch(dist){
+							case 1:
+								pairs_pp_1.push([list_of_stims[i],list_of_stims[j]]);
+								break;
+							case 2:
+								pairs_pp_2.push([list_of_stims[i],list_of_stims[j]]);
+								break;
+							case 3:
+								pairs_pp_3.push([list_of_stims[i],list_of_stims[j]]);
+								break;
+						}
+					} else {
+						switch(dist){
+							case 1:
+								pairs_ww_1.push([list_of_stims[i],list_of_stims[j]]);
+								break;
+							case 2:
+								pairs_ww_2.push([list_of_stims[i],list_of_stims[j]]);
+								break;
+							case 3:
+								pairs_ww_3.push([list_of_stims[i],list_of_stims[j]]);
+								break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// this for loop create all of the possible NOVEL pairs for comparison
+	for(var i=0; i < list_of_novel_stims.length; i++)
+	{
+		for(var j=0; j < list_of_novel_stims.length; j++)
+		{
+			var dist = get_distance(list_of_novel_stims[i], list_of_novel_stims[j]);
+			if(dist <= 3 && dist > 0)
+			{
+				var cat1 = get_category(list_of_novel_stims[i]);
+				var cat2 = get_category(list_of_novel_stims[j]);
+				
+				if(cat1 != cat2)
+				{
+					switch(dist){
+						case 1:
+							pairs_novel_pw_1.push([list_of_novel_stims[i],list_of_novel_stims[j]]);
+							break;
+						case 2:
+							pairs_novel_pw_2.push([list_of_novel_stims[i],list_of_novel_stims[j]]);
+							break;
+						case 3:
+							pairs_novel_pw_3.push([list_of_novel_stims[i],list_of_novel_stims[j]]);
+							break;
+					}
+				} else {
+					if(cat1 == "Pag")
+					{
+						switch(dist){
+							case 1:
+								pairs_novel_pp_1.push([list_of_novel_stims[i],list_of_novel_stims[j]]);
+								break;
+							case 2:
+								pairs_novel_pp_2.push([list_of_novel_stims[i],list_of_novel_stims[j]]);
+								break;
+							case 3:
+								pairs_novel_pp_3.push([list_of_novel_stims[i],list_of_novel_stims[j]]);
+								break;
+						}
+					} else {
+						switch(dist){
+							case 1:
+								pairs_novel_ww_1.push([list_of_novel_stims[i],list_of_novel_stims[j]]);
+								break;
+							case 2:
+								pairs_novel_ww_2.push([list_of_novel_stims[i],list_of_novel_stims[j]]);
+								break;
+							case 3:
+								pairs_novel_ww_3.push([list_of_novel_stims[i],list_of_novel_stims[j]]);
+								break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+
+	// sample from each type to build comparisons
+
+	var number_of_comparison_blocks = 4;
+	var number_of_each_comparison_type_trained_in_block = 3; // multiply by 9 types  and add to below for total comparisons per block
+	var number_of_each_comparison_type_novel_in_block = 1; // multiply by 9 types 
+	
+	if(debug)
+	{
+		number_of_comparison_blocks = 1;
+		number_of_each_comparison_type_trained_in_block = 1; // multiply by 9 types  and add to below for total comparisons per block
+		number_of_each_comparison_type_novel_in_block = 1; // multiply by 9 types 
+	}
+
+	var comparison_blocks = [];
+
+	// sampling below is WITH replacement. 
+	for( var i=0; i < number_of_comparison_blocks; i++)
+	{
+		var tmp_array = [];
+		// insert all of the training comparisons
+		for( var j=0; j < number_of_each_comparison_type_trained_in_block; j++)
+		{
+			tmp_array.push(shuffle(pairs_pp_1.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_pp_2.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_pp_3.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_ww_1.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_ww_2.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_ww_3.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_pw_1.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_pw_2.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_pw_3.slice(0))[0]);
+		}
+		// insert all of the novel comparisons
+		for( var j=0; j < number_of_each_comparison_type_novel_in_block; j++)
+		{
+			tmp_array.push(shuffle(pairs_novel_pp_1.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_novel_pp_2.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_novel_pp_3.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_novel_ww_1.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_novel_ww_2.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_novel_ww_3.slice(0))[0]);
+			//tmp_array.push(shuffle(pairs_novel_pw_1.slice(0))[0]); // there are none of these in current design.
+			tmp_array.push(shuffle(pairs_novel_pw_2.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_novel_pw_3.slice(0))[0]);
+		}
+		comparison_blocks.push(shuffle(tmp_array));
+	}
+
+	// build opt data for comparisons
+
+	var comparison_blocks_data = [];
+	for( var i=0; i<number_of_comparison_blocks; i++)
+	{
+		comparison_blocks_data.push(get_comp_block_data(comparison_blocks[i],i));
+	}
+
+	// SORTING BLOCK ///
+
+	//var sorting_block_stims = [list_of_training_images.concat(list_of_novel_images)];
+	//var sorting_prompt = "<p id='sort_prompt'>Drag and drop the cells into groups, putting cells that belong together in the same group.  Please make sure that some white space separates your groups. It is OK if items in the same group overlap. Press the done button at the bottom of the screen when you are finished.</p>";
+
+
+	// BUILD EXPERIMENT STRUCTURE
+
+	// add training blocks if appropriate
+	if(condition.train == "TRAIN") {
+		experiment_structure.push({"type": "call_function", "func":hide_progress});
+		experiment_structure.push({"type": "text", "text": [start_train_instructions, start_train_instructions_part_2, start_train_instructions_part_3], "cont_key": "13",  "timing": [500]});
+		experiment_structure.push({
+				"type":"adaptive_category_train",
+				"items": training_items,
+				"correct_key": correct_key_resp,
+				"text_answer": text_answers,
+				"choices": [80,87],
+				"correct_text": correct_answer_text,
+				"incorrect_text": incorrect_answer_text,
+				"consecutive_correct_min": min_training_correct,
+				"stop_training_criteria": 5,
+				"prompt": train_prompt
+			});
+		experiment_structure.push({"type": "call_function", "func":show_progress});
+		experiment_structure.push({"type": "text", "text": [progress_instructions], "cont_key": "13",  "timing": [500]});
+		// add in post-training categorization trials with no feedback
+		experiment_structure.push({"type": "text", "text": [categorize_instructions], "cont_key": "13",  "timing": [500]});
+		experiment_structure.push({
+			"type": "singleimage_keyresponse",
+			"stimuli": categorization_stimuli,
+			"choices": [80,87],
+			"continue_after_response": false,
+			"prompt": "<p>Is this a Wij (W) or a Pag (P)?</p>"
+		});
+	}
+
+	// add the appropriate testing blocks
+	if(condition.test == "XAB")
+	{
+		experiment_structure.push({"type": "text", "text": [comp_xab_instructions], "cont_key": "13",  "timing": [500]});
+		for(var i=0; i<number_of_comparison_blocks; i++) {
+			experiment_structure.push({"type": "xab", "stimuli": comparison_blocks[i], "timing_x":500,"timing_ab":500,"timing_xab_gap":1000,"timing_post_trial":1000, "left_key": 90, "right_key": 77, "prompt":"<p id='prompt'>Press z if the image on the left is the same as the first image. Press m if the image on the right is the same as the first image.</p>", "data": comparison_blocks_data[i]});
+		}
+	} else {
+		experiment_structure.push({"type": "text", "text": [comp_sim_instructions], "cont_key": "13",  "timing": [500]});
+		for(var i=0; i<number_of_comparison_blocks; i++) {
+			experiment_structure.push({"type": "similarity", "stimuli": comparison_blocks[i], "timing_first_image": 500, "timing_second_image":500, "timing_image_gap": 1000, "timing_post_trial":1000, "label_high": "Most Similar" , "label_low": "Least Similar" ,  "data": comparison_blocks_data[i]});
+		}
+	}
+
+	// add the final sorting block
+	//experiment_structure = []; // for testing
+	//experiment_structure.push({"type": "text", "text": [sort_instructions], "cont_key": "13",  "timing": [500]});
+	//experiment_structure.push({"type": "free_sort", "stimuli": sorting_block_stims, "prompt": sorting_prompt, "stim_height": 150, "stim_width": 150, "timing":[1000],"data":[{"trial_type":"sort"}]});
+
+	// save data
+	experiment_structure.push({"type": "call_function", "func":save_data, "args": [jsPsych.data]});
+	
+	experiment_structure.push({"type": "html", "force_refresh": true, "pages":[{"url": "debrief_c.html"}]});
+}
+// Functions //////
+
+function get_category(img_string)
+{
+	var split = img_string.split("_");
+	var xy = split.slice(-3,-1);
+	if(xy[0] < 0.5)
+	{
+		return "Wij";
+	} else {
+		return "Pag";
+	}
+}
+
+function get_tag_data(array, block)
+{
+	var tmp_array = [];
+	for(var i in array)
+	{
+		tmp_array[i] = {"block": block, "trial_idx": i, "trial_type": "cat"};
+	}
+	return tmp_array;
+}
+
+function get_comp_block_data(array, block)
+{
+	var tmp_array = [];
+	for(var i in array)
+	{
+		var distance = get_distance(array[i][0],array[i][1]);
+		var type = "";
+		var c1 = get_category(array[i][0]);
+		var c2 = get_category(array[i][1]);
+		if(c1!=c2)
+		{
+			type = "pw";
+		} else {
+			if(c1 == "Pag")
+			{
+				type = "pp";
+			} else {
+				type = "ww";
+			}
+		}
+		tmp_array[i] = {"block": block, "trial_idx": i, "distance": distance, "comparison_type": type };
+	}
+	return tmp_array;
+}
+
+function get_answer(array)
+{
+	var tmp_array = [];
+	for(var i in array)
+	{
+		if(get_category(array[i]) == "Pag")
+		{
+			tmp_array[i] = 80;
+		} else {
+			tmp_array[i] = 87;
+		}
+	}
+	return tmp_array;
+}
+
+function get_text_answer(array)
+{
+	var tmp_array = [];
+	for(var i in array)
+	{
+		tmp_array[i] = get_category(array[i]);
+	}
+	return tmp_array;
+}
+
+function get_distance(img1, img2)
+{
+	var split1 = img1.split("_");
+	var xy1 = split1.slice(-3,-1);
+	
+	var split2 = img2.split("_");
+	var xy2 = split2.slice(-3,-1);
+	
+	var distance = Math.abs(xy1[0]-xy2[0]) + Math.abs(xy1[1]-xy2[1]);
+	
+	// convert to city block units
+	if(condition.stim == "HD")
+	{
+		distance = distance * 6.67;
+	} else {
+		distance = distance * 13.33;
+	}
+	
+	distance = Math.round(distance);
+	
+	return distance;
+}
+
+function hide_progress(){
+	$("#progress").hide();
+}
+
+function show_progress(){
+	$("#progress").show();
+}
+
+//// START EXPERIMENT! //////////
+
+function start_experiment(){
+
+	if(turk.previewMode || turk.workerId == "" || turk.workerId == undefined)
+	{
+		if(!debug){
+			alert("There was an error retrieving your mturk worker ID. Please close this window, as you will be unable to complete the experiment."); 
+			return;
+		}
+	} 
+	
+	if(check_consent()){
+		$('#consent').hide();
+		$('#target').show();
+		$('#progress').show();
+
+		setTimeout(function(){
+			jsPsych.init(
+				$('#target'),
+				{
+					"experiment_structure": experiment_structure,
+					"finish": function(data){},
+					"on_trial_start": function(){
+						var progress = jsPsych.progress();
+						
+						$("#progressbar").progressbar({ value: ((progress.current_trial_global+1)/progress.total_trials)*100 });
+					},
+				}
+			);
+		}, 1000);
+	} else {
+		alert("In order to continue, you must consent to participate in the study by checking the box next to the statement 'I agree to participate in this study.'");
+	}
+}
+
+function save_data(args)
+{
+	var data = args[0]();
+	
+	$.ajax({
+		type: 'post',
+		cache: false,
+		url: '../common/submit_data_mysql.php',
+		data: {
+			"table":"co_ex_exp_3", 
+			"json": JSON.stringify(data), 
+			"opt_data":JSON.stringify({
+				"mturk_id": turk.workerId,
+				"exp_condition": condition.train + "-" + condition.test +"-" + condition.stim,
+				"train_type": condition.train,
+				"test_type": condition.test,
+				"stim_type": condition.stim
+				})
+		},
+		success: function(data2) { console.log(data2); }
+	});
+}
+
+function check_consent()
+{
+	//return true;
+	return document.getElementById('consent_checkbox').checked;
+}
+
+
+function shuffle(array) {
+    var tmp, current, top = array.length;
+
+    if(top) while(--top) {
+        current = Math.floor(Math.random() * (top + 1));
+        tmp = array[current];
+        array[current] = array[top];
+        array[top] = tmp;
+    }
+
+    return array;
+}
+</script>
+</html>

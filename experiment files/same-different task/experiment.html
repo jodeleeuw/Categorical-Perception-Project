@@ -1,0 +1,653 @@
+<!doctype html>
+<!--
+
+	Compression / Expansion Study #5
+	S/D instead of XAB
+	June 2013
+
+-->
+<html>
+<head>
+
+<!-- Load required jquery libraries -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js" type="text/javascript"></script>
+<!-- Load the jspsych libraries -->
+<script src="//perceptsconcepts.psych.indiana.edu/jspsych/v1.6/jspsych.js" type="text/javascript"></script>
+<script src="//perceptsconcepts.psych.indiana.edu/jspsych/v1.6/plugins/jspsych-text.js" type="text/javascript"></script>
+<script src="//perceptsconcepts.psych.indiana.edu/jspsych/v1.6/plugins/jspsych-single-stim.js" type="text/javascript"></script>
+<script src="//perceptsconcepts.psych.indiana.edu/jspsych/v1.6/plugins/dev/jspsych-adaptive-category-train.js" type="text/javascript"></script>
+<script src="//perceptsconcepts.psych.indiana.edu/jspsych/v1.6/plugins/jspsych-same-different.js" type="text/javascript"></script>
+<script src="//perceptsconcepts.psych.indiana.edu/jspsych/v1.6/plugins/jspsych-similarity.js" type="text/javascript"></script>
+<script src="//perceptsconcepts.psych.indiana.edu/jspsych/v1.6/plugins/jspsych-html.js" type="text/javascript"></script>
+<script src="//perceptsconcepts.psych.indiana.edu/jspsych/v1.6/plugins/jspsych-call-function.js" type="text/javascript"></script>
+
+<script src="../common/turk.js" type="text/javascript"></script>
+
+<!-- Link (import) the stylesheet for your experiment -->
+<link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+
+<style>
+#target { width: 1000px; margin-left: auto; margin-right: auto; margin-top: 50px; text-align: center; }
+img { margin-left: 30px; margin-right: 30px; width: 250px; height: 250px;}
+body { background: #fff; margin:0;padding:0;}
+
+#consent { width: 800px; margin-left:auto; margin-right: auto; margin-top: 30px; background: white; padding: 40px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;}
+#consent h1, h2 { font-size: 16px; text-align: center;}
+#consent h2, h3 { font-size: 14px; }
+
+button { margin-left: auto; margin-right: auto; }
+
+#target p { color: black;  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; }
+
+#cf_prompt { font-size: 18px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;}
+
+#instructions, #adaptive_category_progress {width: 500px; margin-left: auto; margin-right: auto; text-align: left; color: black; font-size: 16px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; }
+#next { width: 75px; height: 40px; margin-top:10px; }
+
+#code { background: #ddd; border: 1px solid #999; width: 400px; margin-left:auto; margin-right: auto; margin-top:30px; padding: 40px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;}
+#code h3 { color: #f00; font-family: 'Arial', sans-serif; font-size: 20px;}
+
+#turk_error { width:100%; height: 80px; background: #222; border-bottom: 2px solid #999; text-align: center; font-size: 18px; color: white; font-size: 18px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; padding-top: 20px;}
+
+#sd_prompt {width: 500px; margin-left: auto; margin-right: auto; margin-top: 250px; text-align: center; color: black; font-size: 18px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; }
+
+em { font-weight: bold; font-style: normal; }
+
+#load p { width: 600px; margin-left: auto; margin-right: auto; margin-top: 250px; text-align: center; color: black; font-size: 22px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; }
+
+#progress { height: 20px; padding: 10px; background: #ccc; border-bottom: 1px solid #999; }
+
+#progressbar { margin: auto; width: 300px; height: 20px; }
+
+#progresscontainer { width: 500px; margin: auto; }
+
+#progress p { margin: 0; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; font-size: 14px; float: left; }
+
+.sd_left, .sd_right { position: relative; width: 500px; margin: auto; }
+.sd_left img { float: left; }
+.sd_right img { float: right; }
+.sd { height:250px; }
+</style>
+</head>
+
+<!-- Begin the page -->
+<body>
+<!-- TURK ERROR? -->
+<div id="turk_error">
+	<p>Error: There was an error retrieving your mturk worker ID. If you have javascript cookies disabled, you can try enabling them, returning this HIT, and accepting a new HIT. Please close this window, as you will be unable to complete the experiment.</p>
+</div>
+<!-- LOADING -->
+<div id="load">
+	<p>The experiment is loading. It should begin momentarily.</p>
+</div>
+<!-- CONSENT FORM -->
+<div id="consent">
+	<p>This experiment is being conducted at Vassar College. It consists of several tasks, each of which involves viewing various objects and making simple judgments about them. The study takes approximately 25 minutes to complete. Participation poses minimal risk, meaning the risk is no greater than that of normal, everyday activities. Your anonymous data, identified only by your Mechanical Turk worker ID, will be used for research purposes.  For your participation, you will receive a small payment of $1.50 upon completion of the experiment. You are free to stop the experiment by closing your browser window at any time. If you have any questions, you can contact Prof. Jan Andrews at andrewsj@vassar.edu.</p>
+	<p>By clicking "I agree," you affirm that you are at least 18 years of age, which is the minimum age to participate in this study.</p>
+	<p><input type="checkbox" id="consent_checkbox" />I agree to take part in this study.</p>	
+	<button type="button" onclick="this.blur(); start_experiment();">Start Experiment</button>
+</div>
+<!-- END CONSENT FORM -->
+<div id="progress">
+	<div id="progresscontainer">
+		<p>Experiment progress:</p>
+		<div id="progressbar"></div>
+	</div>
+</div>
+<div id="target">
+</div>
+</body>
+
+<script type="text/javascript">
+// for testing purposes!
+var debug = false;
+var testing = true; // if true, makes the experiment full length
+var savedata = true;
+
+if(debug){
+	turk.workerId = "TESTING-"+Math.floor(Math.random()*100000);
+}
+
+$("#progress").hide();
+$("#target").hide();
+$("#turk_error").hide();
+$("#consent").hide();
+
+// Instructions /////
+var start_train_instructions = '<div id="instructions"> \
+	<p>In this experiment, you will be trained to identify two kinds of alien cells. After training, you will \
+	be tested on your ability to recognize different kinds of cells.</p> \
+	<p>There are two parts to this experiment: a training task, and an identification task. The experiment should take approximately 35 minutes \
+	to complete, but it will depend on how quickly you are able to complete the training task.</p> \
+	<p>To get started, press ENTER.</p></div>';
+	
+var start_train_instructions_part_2 = '<div id="instructions"> \
+	<p>The first part of this experiment is to complete training. You will be shown a cell and asked <em>Is this a Tig (T) or a Bep (B)?</em></p> \
+	<p>To indicate that the cell is a Tig, <em>press T</em> on the keyboard.</p> \
+	<p>To indicate that the cell is a Bep, <em>press B</em> on the keyboard.</p> \
+	<p>Initially you\'ll need to guess, but you should eventually learn to distinguish the two types of cell.</p> \
+	<p>The training may be very difficult. Please ensure that you are able to devote your full attention to training. If you are unable to do so, \
+	we strongly encourage you not to continue with the experiment.</p>\
+	<p>Do you wish to proceed? If so, press ENTER to continue. If you do not want to complete the experiment, please close your browser window and return the HIT.</p></div>';
+	
+
+var start_train_instructions_part_3 = '<div id="instructions"> \
+	<p>During training, if you correctly categorize an item in four consecutive rounds, the item will be marked as complete. When you have \
+	completed all of the items, training will be finished and you can continue the experiment. In order to make progress in training, you need to maintain at least a 60% overall accuracy rate.\
+	If you fall below 60% accuracy for a round, then no items will be marked as complete for that round. If you fall below 60% accuracy for five consecutive rounds,\
+	then training will end.</p>\
+	<p>Do you wish to proceed? If so, press ENTER to continue. If you do not want to complete the experiment, please close your browser window and return the HIT.</p></div>';
+	
+var progress_instructions = '<div id="instructions"> \
+		<p>The bar above will show your progress throughout the remainder of the experiment. Don\'t worry that it looks empty, you are already about halfway done. It doesn\'t count training.</p> \
+		<p>Press ENTER to continue.</p>';
+		
+var categorize_instructions = '<div id="instructions"> \
+		<p>The next part of the experiment is similar to training, except no feedback will be given. You will see a cell on the screen and be asked <em>Is this a Tig (T) or a Bep (B)?</em></p> \
+		<p>To indicate that the cell is a Tig, <em>press T</em> on the keyboard.</p> \
+		<p>To indicate that the cell is a Bep, <em>press B</em> on the keyboard.</p> \
+		<p>There are 36 cells to identify.</p>\
+		<p>Press ENTER to begin.</p>';		
+
+	
+var comp_sd_instructions = '<div id="instructions"> \
+		<p>In this part of the experiment, you will see a single alien cell appear on the screen. It will disappear \
+		and be replaced by another cell.  Your task is to identify if the cells were the same exact cell, or different cells, based on their visual appearance.</p> \
+		<p>To indicate that the cells are the <em>same</em>, <em>press S</em> on the keyboard.</p> \
+		<p>To indicate that the cells are <em>different</em>, <em>press D</em> on the keyboard.</p> \
+		<p>There are 4 sets of 54 trials to complete. You will get a break to rest your eyes after each set. Each set takes about 4 minutes. When you are ready to begin, press ENTER.</p></div>';
+
+var rest_instructions = '<div id="instructions">' +
+    '<p>Nice work. Take a quick break to rest your eyes.</p>' +
+    '<p>Press ENTER when you are ready to start the next set</p>';
+
+// End Instructions //////
+
+var experiment_structure = []; // this needs to have global scope.
+
+// CONDITION ASSIGNMENT //////////////////////////
+var condition = {};
+
+if(turk.previewMode || turk.workerId == "" || turk.workerId == undefined)
+{
+	$("#turk_error").show();
+} else {
+
+	var targets = [
+		"TRAIN-SD-HD",
+		"TRAIN-SD-LD",
+		"CONTROL-SD-HD",
+		"CONTROL-SD-LD"
+	];
+	
+	var cond = targets[Math.floor(Math.random()*4)];
+
+	// force a condition here
+	cond = "TRAIN-SD-LD";
+	
+	// write the subject to the subjects table
+	if(savedata){
+		$.ajax({
+			type: 'post',
+			cache: false,
+			url: '../common/write_subject_mysql.php',
+			data: {"table": "co_ex_exp_5_subjects", "data": JSON.stringify({
+							"mturk_id": turk.workerId, 
+							"exp_condition": cond})
+					},
+			success: function(data_new) { }
+		});
+	}
+	
+	// fill out stim object
+	var cond_arr = cond.split("-");
+	condition = {"stim": cond_arr[2], "test": cond_arr[1], "train": cond_arr[0]};
+	
+	create_experiment();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/// BUILD EXPERIMENT ////
+
+// We can only do this after condition assignment is complete, which is why this is wrapped in a function call ///
+
+function create_experiment() {
+
+	// Stimuli //////
+
+	// Building a list of all the images in the experiment (by path)
+	// and then preloading them so they will display "instantly"
+
+	var list_of_training_images = [];
+
+	// load the training stimuli	
+	for(var x=1; x<=6; x++)
+	{
+		for(var y=1; y<=6; y++){
+			list_of_training_images.push("img/"+condition.stim+"_"+x+"_"+y+"_.jpg");
+		}
+	}
+
+	var list_of_images = list_of_training_images;
+
+	jsPsych.preloadImages(
+		list_of_images,
+		function() { $("#load").hide(); $("#consent").show(); }
+		
+	);
+	// PRELOAD COMPLETE
+
+	// Build blocks
+
+	// TRAINING BLOCKS /////////
+
+	var train_prompt = "<p id='cf_prompt'>Is this a Tig (T) or a Bep (B)?</p>";
+	var correct_answer_text = "<p id='cf_prompt'><em>Correct</em>. This is a &ANS&.</p>";
+	var incorrect_answer_text = "<p id='cf_prompt'><em>Wrong</em>. This is a &ANS&.</p>";
+
+	var training_items = list_of_training_images.slice(0);
+	var correct_key_resp = get_answer(training_items);
+	var text_answers = get_text_answer(training_items);
+	
+	// categorization after training
+	var categorization_stimuli = shuffle(list_of_images.slice(0));
+	var min_training_correct = 4;
+	if(debug && !testing) { min_training_correct = 0; }
+
+	/// END TRAINING BLOCKS
+	
+	// Create SIM/XAB blocks
+
+	// identity pairs
+	var pairs_identity = [];
+	
+	// enumerate all pairs that are 1, 2, and 3 city-block units apart.
+
+	// pag-pag comparisons
+	var pairs_pp_1 = [];
+	var pairs_pp_2 = [];
+	var pairs_pp_3 = [];
+
+	// wij-wij comparisons
+	var pairs_ww_1 = [];
+	var pairs_ww_2 = [];
+	var pairs_ww_3 = [];
+
+	// pag-wij comparisons
+	var pairs_pw_1 = [];
+	var pairs_pw_2 = [];
+	var pairs_pw_3 = [];
+
+	var list_of_stims = list_of_training_images;
+
+	// this for loop create all of the possible training pairs for comparison
+	for(var i=0; i < list_of_stims.length; i++)
+	{
+		for(var j=0; j < list_of_stims.length; j++)
+		{
+			var dist_obj = get_distance(list_of_stims[i], list_of_stims[j]);
+			var dist = dist_obj.distance;
+			if(dist === 0)
+			{
+				pairs_identity.push([list_of_stims[i], list_of_stims[j]]);
+			}
+			if(dist <= 3 && dist > 0)
+			{
+				var cat1 = get_category(list_of_stims[i]);
+				var cat2 = get_category(list_of_stims[j]);
+				
+				if(cat1 != cat2)
+				{
+					switch(dist){
+						case 1:
+							pairs_pw_1.push([list_of_stims[i],list_of_stims[j]]);
+							break;
+						case 2:
+							pairs_pw_2.push([list_of_stims[i],list_of_stims[j]]);
+							break;
+						case 3:
+							pairs_pw_3.push([list_of_stims[i],list_of_stims[j]]);
+							break;
+					}
+				} else {
+					if(cat1 == "Bep")
+					{
+						switch(dist){
+							case 1:
+								pairs_pp_1.push([list_of_stims[i],list_of_stims[j]]);
+								break;
+							case 2:
+								pairs_pp_2.push([list_of_stims[i],list_of_stims[j]]);
+								break;
+							case 3:
+								pairs_pp_3.push([list_of_stims[i],list_of_stims[j]]);
+								break;
+						}
+					} else {
+						switch(dist){
+							case 1:
+								pairs_ww_1.push([list_of_stims[i],list_of_stims[j]]);
+								break;
+							case 2:
+								pairs_ww_2.push([list_of_stims[i],list_of_stims[j]]);
+								break;
+							case 3:
+								pairs_ww_3.push([list_of_stims[i],list_of_stims[j]]);
+								break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// sample from each type to build comparisons
+
+	var number_of_comparison_blocks = 4;
+	var number_of_each_comparison_type_trained_in_block = 3; // multiply by 9 types  and add to below for total comparisons per block
+	var number_of_identical_pairs_in_block = 27;
+	
+	if(debug && !testing)
+	{
+		number_of_comparison_blocks = 1;
+		number_of_each_comparison_type_trained_in_block = 1; // multiply by 9 types  and add to below for total comparisons per block
+		number_of_identical_pairs_in_block = 9;
+	}
+
+	var comparison_blocks = [];
+
+	// sampling below is WITH replacement. 
+	for( var i=0; i < number_of_comparison_blocks; i++)
+	{
+		var tmp_array = [];
+		// insert all of the training comparisons
+		for( var j=0; j < number_of_each_comparison_type_trained_in_block; j++)
+		{
+			tmp_array.push(shuffle(pairs_pp_1.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_pp_2.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_pp_3.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_ww_1.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_ww_2.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_ww_3.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_pw_1.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_pw_2.slice(0))[0]);
+			tmp_array.push(shuffle(pairs_pw_3.slice(0))[0]);
+		}
+		for( var j=0; j < number_of_identical_pairs_in_block; j++)
+		{
+			tmp_array.push(shuffle(pairs_identity.slice(0))[0]);
+		}
+
+		comparison_blocks.push(shuffle(tmp_array));
+	}
+	
+	var shifted_stimuli = [];
+	
+	// shift stimuli left or right
+	for( var i=0; i<comparison_blocks.length; i++)
+	{
+		var block_arr = [];
+		for( var j=0; j<comparison_blocks[i].length; j++)
+		{
+			var direction="left";
+			if(Math.floor(Math.random()*2)==0){ direction="right"; }
+			block_arr.push(["<div class='sd_center'><img src='"+comparison_blocks[i][j][0]+"'></img></div>",
+							"<div class='sd_"+direction+"'><img src='"+comparison_blocks[i][j][1]+"'></img></div>"]);
+		}
+		shifted_stimuli.push(block_arr);
+	}
+	
+	// get answers for sd block
+	var sd_answers = [];
+	for( var i=0; i<number_of_comparison_blocks; i++)
+	{
+		var answers = [];
+		for( var j = 0; j < comparison_blocks[i].length; j++)
+		{
+			if(comparison_blocks[i][j][0] == comparison_blocks[i][j][1]){
+				answers.push("same");
+			} else {
+				answers.push("different");
+			}
+		}
+		sd_answers.push(answers);
+	
+	}
+
+	// build opt data for comparisons
+
+	var comparison_blocks_data = [];
+	for( var i=0; i<number_of_comparison_blocks; i++)
+	{
+		comparison_blocks_data.push(get_comp_block_data(comparison_blocks[i],i));
+	}
+
+	// BUILD EXPERIMENT STRUCTURE
+
+	// add training blocks if appropriate
+	if(condition.train == "TRAIN") {
+		experiment_structure.push({"type": "call-function", "func":hide_progress});
+		experiment_structure.push({"type": "text", "text": [start_train_instructions, start_train_instructions_part_2, start_train_instructions_part_3], "cont_key": "13",  "timing": [500]});
+		experiment_structure.push({
+				"type":"adaptive_category_train",
+				"items": training_items,
+				"correct_key": correct_key_resp,
+				"text_answer": text_answers,
+				"choices": [66,84],
+				"correct_text": correct_answer_text,
+				"incorrect_text": incorrect_answer_text,
+				"consecutive_correct_min": min_training_correct,
+				"stop_training_criteria": 5,
+				"prompt": train_prompt
+			});
+		experiment_structure.push({"type": "call-function", "func":show_progress});
+		experiment_structure.push({"type": "text", "text": [progress_instructions], "cont_key": "13",  "timing_post_trial": 1500});
+		// add in post-training categorization trials with no feedback
+		experiment_structure.push({"type": "text", "text": [categorize_instructions], "cont_key": "13",  "timing_post_trial": 1500});
+		experiment_structure.push({
+			"type": "single-stim",
+			"stimuli": categorization_stimuli,
+			"choices": [66,84],
+			"continue_after_response": false,
+			"prompt": "<p>Is this a Tig (T) or a Bep (B)?</p>"
+		});
+	}
+
+	// add the appropriate testing blocks - ONLY S/D for this version
+	
+	experiment_structure.push({"type": "text", "text": [comp_sd_instructions], "cont_key": "13",  "timing_post_trial": 1500});
+	for(var i=0; i<number_of_comparison_blocks; i++) {
+		experiment_structure.push({"type": "same-different", "is_html":true, "stimuli": shifted_stimuli[i], "answer":sd_answers[i], "timing_first_stim": 750,"timing_second_stim": 750,"timing_gap": 1000,"timing_post_trial":1000, "same_key": 83, "different_key": 68, "prompt":"<p id='prompt'>(S)ame or (D)ifferent?</p>", "data": comparison_blocks_data[i]});
+	    if(i != number_of_comparison_blocks - 1) {
+	        experiment_structure.push({"type": "text", text:[rest_instructions], timing_post_trial: 1500});
+	    }
+	}
+	
+	// save data
+	experiment_structure.push({"type": "call-function", "func":save_data, "args": [jsPsych.data]});
+	
+	experiment_structure.push({"type": "html", "force_refresh": true, "pages":[{"url":"debrief.html"}]});
+}
+// Functions //////
+
+function get_category(img_string)
+{
+	var split = img_string.split("_");
+	var xy = split.slice(-3,-1);
+	if(xy[0] <= 3)
+	{
+		return "Tig";
+	} else {
+		return "Bep";
+	}
+}
+
+function get_tag_data(array, block)
+{
+	var tmp_array = [];
+	for(var i in array)
+	{
+		tmp_array[i] = {"block": block, "trial_type": "cat"};
+	}
+	return tmp_array;
+}
+
+function get_comp_block_data(array, block)
+{
+	var tmp_array = [];
+	for(var i in array)
+	{
+		var dist_obj = get_distance(array[i][0],array[i][1]);
+		var type = "";
+		var c1 = get_category(array[i][0]);
+		var c2 = get_category(array[i][1]);
+		if(c1!=c2)
+		{
+			type = "pw";
+		} else {
+			if(c1 == "Bep")
+			{
+				type = "pp";
+			} else {
+				type = "ww";
+			}
+		}
+		tmp_array[i] = {"block": block, "distance": dist_obj.distance, "comparison_type": type, "xdist": dist_obj.xdist , "ydist": dist_obj.ydist };
+	}
+	return tmp_array;
+}
+
+function get_answer(array)
+{
+	var tmp_array = [];
+	for(var i in array)
+	{
+		if(get_category(array[i]) == "Bep")
+		{
+			tmp_array[i] = 66;
+		} else {
+			tmp_array[i] = 84;
+		}
+	}
+	return tmp_array;
+}
+
+function get_text_answer(array)
+{
+	var tmp_array = [];
+	for(var i in array)
+	{
+		tmp_array[i] = get_category(array[i]);
+	}
+	return tmp_array;
+}
+
+function get_distance(img1, img2)
+{
+	var split1 = img1.split("_");
+	var xy1 = split1.slice(-3,-1);
+	
+	var split2 = img2.split("_");
+	var xy2 = split2.slice(-3,-1);
+	
+	var xdist = Math.abs(xy1[0]-xy2[0]);
+	var ydist = Math.abs(xy1[1]-xy2[1]);
+	var distance = xdist + ydist;
+	
+	return {xdist: xdist, ydist: ydist, distance: distance};
+}
+
+function hide_progress(){
+	$("#progress").hide();
+}
+
+function show_progress(){
+	$("#progress").show();
+}
+
+//// START EXPERIMENT! //////////
+
+function start_experiment(){
+
+	if(turk.previewMode || turk.workerId == "" || turk.workerId == undefined)
+	{
+		if(!debug){
+			alert("There was an error retrieving your mturk worker ID. Please close this window, as you will be unable to complete the experiment."); 
+			return;
+		}
+	} 
+	
+	if(check_consent()){
+		$('#consent').hide();
+		$('#target').show();
+		$('#progress').show();
+
+		setTimeout(function(){
+			jsPsych.init(
+				{
+					"display_element": $('#target'),
+					"experiment_structure": experiment_structure,
+					"on_finish": function(data){},
+					"on_trial_start": function(){
+						var progress = jsPsych.progress();
+						
+						$("#progressbar").progressbar({ value: ((progress.current_trial_global+1)/progress.total_trials)*100 });
+					},
+				}
+			);
+		}, 1000);
+	} else {
+		alert("In order to continue, you must consent to participate in the study by checking the box next to the statement 'I agree to participate in this study.'");
+	}
+}
+
+function save_data(args)
+{
+	var data = args[0]();
+	
+	if(savedata){
+		$.ajax({
+			type: 'post',
+			cache: false,
+			url: '../common/submit_data_mysql.php',
+			data: {
+				"table":"co_ex_exp_5", 
+				"json": JSON.stringify(data), 
+				"opt_data":JSON.stringify({
+					"mturk_id": turk.workerId,
+					"exp_condition": condition.train + "-" + condition.test +"-" + condition.stim,
+					"train_type": condition.train,
+					"test_type": condition.test,
+					"stim_type": condition.stim
+					})
+			},
+			success: function(data2) { console.log(data2); }
+		});
+	}
+}
+
+function check_consent()
+{
+	//return true;
+	return document.getElementById('consent_checkbox').checked;
+}
+
+
+function shuffle(array) {
+    var tmp, current, top = array.length;
+
+    if(top) while(--top) {
+        current = Math.floor(Math.random() * (top + 1));
+        tmp = array[current];
+        array[current] = array[top];
+        array[top] = tmp;
+    }
+
+    return array;
+}
+</script>
+</html>
