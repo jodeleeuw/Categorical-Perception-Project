@@ -1,0 +1,82 @@
+<html>
+<head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script src="../common/turk.js"></script>
+<script src="../common/browser.js" type="text/javascript"></script>
+</head>
+
+<style type="text/css">
+body { background: white; margin:0;padding:0; }
+#browser_warning { width:100%; height: 80px; background: #222; border-bottom: 2px solid #999; text-align: center; font-size: 18px; color: black; font-size: 18px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; padding-top: 20px;}
+#instructions {padding-top: 30px; padding-bottom: 50px; width: 500px; margin-left: auto; margin-right: auto; text-align: left; color: black; font-size: 14px; font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif; }
+
+#go_link { color: red; font-size: 18px; }
+#go_link a { color: red; }
+</style>
+
+<body>
+<div id="browser_warning">
+	<p>Warning: Your browser may not be compatible with this HIT. We recommend that you do not accept it, as you may not be able to complete it after you start.</p>
+</div>
+<div id="instructions">
+	<p>This study is being conducted by faculty in the Cognitive Science Program at Vassar College.  Our research addresses the nature of concepts and category learning based on perceptual experience.
+	If you agree to be in the experiment, you will be shown various pictures and asked to make judgments about them.</p>
+	<p>For participating in this study, you will receive a small payment of $1.25 upon completion of the experiment. Most people will finish the experiment in less than 30 minutes.</p>
+	<p>If you want to participate, please click "Accept this HIT" at the top or bottom of your screen, and then click the link to "Start the Experiment" below.</p>
+	<p id="go_link">You must accept the HIT before you can begin.</p>
+
+	<p>When you have completed the experiment, you'll be given a code to enter here.</p>
+	<p>Enter the code you were given:</p>
+	<p><input type="text" id="code"></input></p>
+	<p>Optional questions to help us improve future experiments:</p>
+	<p>What web browser did you use to do this experiment?</p>
+	<p><input type="text" id="browser"></input></p>
+	<p>What operating system are you using?
+	<p><input type="text" id="os"></input></p>
+	<p>Any feedback on the experiment?</p>
+	<p><textarea rows="4" cols="50" id="comment"></textarea></p>
+	<p><button onclick="sendData();">Submit HIT</button></p>
+</div>
+</body>
+<script type="text/javascript">
+function sendData(){
+	turk.submit(
+		{
+			code: document.getElementById('code').value, 
+			comment: document.getElementById('comment').value, 
+			browser: document.getElementById('browser').value,
+			os: document.getElementById('os').value
+		});
+}
+
+if(!turk.previewMode)
+{
+	$.ajax({
+		type: 'post',
+		url: '../common/exclude_subjects.php',
+		data: {"mturk_id": turk.workerId, "col_id":'mturk_id', "tables": JSON.stringify(["co_ex_exp_1_subjects","co_ex_exp_2_subjects", "co_ex_exp_3_subjects", "co_ex_exp_4_subjects", "co_ex_exp_5_subjects", "co_ex_exp_6_subjects"])},
+		success: function(data)
+		{
+			if(data=="1")
+			{
+				$("#go_link").html('<a href="experiment.html" target="_blank">Start the Experiment.</a>');
+			} else {
+				//already in database
+				$("#instructions").html('<h3>Sorry, you have already participated in this study or a related study and are not eligible to complete this HIT.</h3>');
+			}
+		}
+	});
+}
+
+
+
+
+
+if(BrowserDetect.browser == "Chrome" || BrowserDetect.browser == "Firefox" || BrowserDetect.browser == "Safari"  )
+{
+	$("#browser_warning").hide();
+}
+
+
+</script>
+</html>
