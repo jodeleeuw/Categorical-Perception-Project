@@ -142,7 +142,7 @@ category_data <- filterdata[filterdata$trial_type=="singleimag",]
 # can't use 3 unit pairs because they are ALL between category.
 
 ### SD data
-sd_classic_cp <- ddply(filterdata[filterdata$trial_type=="same-different" & filterdata$xdist<3 & filterdata$ydist==0 & filterdata$distance>0,],
+sd_classic_cp <- ddply(filterdata[filterdata$trial_type=="same-different" & filterdata$ydist<3 & filterdata$xdist==0 & filterdata$distance>0,],
                        .(mturk_id, train_type, stim_type, category_type ),
                        function(subset)with(subset, c(mean_score = mean(correct))))
 layout(matrix(1:2, nrow=1))
@@ -156,7 +156,7 @@ ezANOVA(data=sd_classic_cp,
         between = .(stim_type, train_type))
 
 ### SIM data
-sim_classic_cp <- ddply(filterdata[filterdata$trial_type=="similarity" & filterdata$xdist<3 & filterdata$ydist==0,],
+sim_classic_cp <- ddply(filterdata[filterdata$trial_type=="similarity" & filterdata$ydist<3 & filterdata$xdist==0,],
                         .(mturk_id, train_type, stim_type, category_type ),
                         function(subset)with(subset, c(mean_score = mean(sim_score))))
 layout(matrix(1:2, nrow=1))
@@ -173,7 +173,7 @@ ezANOVA(data=sim_classic_cp,
 bargraph.CI(category_type, mean_score, train_type, data=sim_classic_cp)
 
 ### XAB data
-xab_classic_cp <- ddply(filterdata[filterdata$trial_type=="xab" & filterdata$xdist<3 & filterdata$ydist==0,],
+xab_classic_cp <- ddply(filterdata[filterdata$trial_type=="xab" & filterdata$ydist<3 & filterdata$xdist==0,],
                         .(mturk_id, train_type, stim_type, category_type ),
                         function(subset)with(subset, c(mean_score = mean(correct))))
 layout(matrix(1:2, nrow=1))
@@ -223,42 +223,42 @@ sd_dimensions <- ddply(sd_diff_data, .(mturk_id, train_type, stim_type, xdist, y
                        function(subset)with(subset,c(mean_score=mean(diff))))
 
 ## irrelevant dimension
-sd_influence_irrelevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
-  influence_measure(subset, "ydist", "mean_score")
-})
-
-# truncate the meaningless xdist = 3 rows
-sd_influence_irrelevant <- sd_influence_irrelevant[sd_influence_irrelevant$xdist < 3,]
-
-## relevant dimension
-sd_influence_relevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
+sd_influence_irrelevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
   influence_measure(subset, "xdist", "mean_score")
 })
 
 # truncate the meaningless ydist = 3 rows
-sd_influence_relevant <- sd_influence_relevant[sd_influence_relevant$ydist < 3,]
+sd_influence_irrelevant <- sd_influence_irrelevant[sd_influence_irrelevant$ydist < 3,]
+
+## relevant dimension
+sd_influence_relevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
+  influence_measure(subset, "ydist", "mean_score")
+})
+
+# truncate the meaningless xdist = 3 rows
+sd_influence_relevant <- sd_influence_relevant[sd_influence_relevant$xdist < 3,]
 
 # graph the results
 layout(matrix(1:4,nrow=2, byrow=T))
-bargraph.CI(xdist, influence, train_type,data=sd_influence_irrelevant[sd_influence_irrelevant$stim_type=="HD",])
-bargraph.CI(xdist, influence, train_type,data=sd_influence_irrelevant[sd_influence_irrelevant$stim_type=="LD",])
-bargraph.CI(ydist, influence, train_type,data=sd_influence_relevant[sd_influence_relevant$stim_type=="HD",])
-bargraph.CI(ydist, influence, train_type,data=sd_influence_relevant[sd_influence_relevant$stim_type=="LD",])
+bargraph.CI(ydist, influence, train_type,data=sd_influence_irrelevant[sd_influence_irrelevant$stim_type=="HD",])
+bargraph.CI(ydist, influence, train_type,data=sd_influence_irrelevant[sd_influence_irrelevant$stim_type=="LD",])
+bargraph.CI(xdist, influence, train_type,data=sd_influence_relevant[sd_influence_relevant$stim_type=="HD",])
+bargraph.CI(xdist, influence, train_type,data=sd_influence_relevant[sd_influence_relevant$stim_type=="LD",])
 
 # ANOVAs
-sd_influence_irrelevant$xdist <- factor(sd_influence_irrelevant$xdist)
+sd_influence_irrelevant$ydist <- factor(sd_influence_irrelevant$ydist)
 ezANOVA(data=sd_influence_irrelevant,
         dv=.(influence),
         wid=.(mturk_id),
         between=.(train_type,stim_type),
-        within=.(xdist))
+        within=.(ydist))
 
-sd_influence_relevant$ydist <- factor(sd_influence_relevant$ydist)
+sd_influence_relevant$xdist <- factor(sd_influence_relevant$xdist)
 ezANOVA(data=sd_influence_relevant,
         dv=.(influence),
         wid=.(mturk_id),
         between=.(train_type,stim_type),
-        within=.(ydist))
+        within=.(xdist))
 
 #### Similarity task
 
@@ -267,42 +267,42 @@ sim_dimensions <- ddply(filterdata[filterdata$trial_type=="similarity",], .(mtur
                        function(subset)with(subset,c(mean_score=mean(sim_score))))
 
 ## irrelevant dimension
-sim_influence_irrelevant <- ddply(sim_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
-  influence_measure(subset, "ydist", "mean_score")
-})
-
-# truncate the meaningless xdist = 3 rows
-sim_influence_irrelevant <- sim_influence_irrelevant[sim_influence_irrelevant$xdist < 3,]
-
-## relevant dimension
-sim_influence_relevant <- ddply(sim_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
+sim_influence_irrelevant <- ddply(sim_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
   influence_measure(subset, "xdist", "mean_score")
 })
 
 # truncate the meaningless ydist = 3 rows
-sim_influence_relevant <- sim_influence_relevant[sim_influence_relevant$ydist < 3,]
+sim_influence_irrelevant <- sim_influence_irrelevant[sim_influence_irrelevant$ydist < 3,]
+
+## relevant dimension
+sim_influence_relevant <- ddply(sim_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
+  influence_measure(subset, "ydist", "mean_score")
+})
+
+# truncate the meaningless xdist = 3 rows
+sim_influence_relevant <- sim_influence_relevant[sim_influence_relevant$xdist < 3,]
 
 # graph the results
 layout(matrix(1:4,nrow=2, byrow=T))
-bargraph.CI(xdist, influence, train_type,data=sim_influence_irrelevant[sim_influence_irrelevant$stim_type=="HD",])
-bargraph.CI(xdist, influence, train_type,data=sim_influence_irrelevant[sim_influence_irrelevant$stim_type=="LD",])
-bargraph.CI(ydist, influence, train_type,data=sim_influence_relevant[sim_influence_relevant$stim_type=="HD",])
-bargraph.CI(ydist, influence, train_type,data=sim_influence_relevant[sim_influence_relevant$stim_type=="LD",])
+bargraph.CI(ydist, influence, train_type,data=sim_influence_irrelevant[sim_influence_irrelevant$stim_type=="HD",])
+bargraph.CI(ydist, influence, train_type,data=sim_influence_irrelevant[sim_influence_irrelevant$stim_type=="LD",])
+bargraph.CI(xdist, influence, train_type,data=sim_influence_relevant[sim_influence_relevant$stim_type=="HD",])
+bargraph.CI(xdist, influence, train_type,data=sim_influence_relevant[sim_influence_relevant$stim_type=="LD",])
 
 # ANOVAs
-sim_influence_irrelevant$xdist <- factor(sim_influence_irrelevant$xdist)
+sim_influence_irrelevant$ydist <- factor(sim_influence_irrelevant$ydist)
 ezANOVA(data=sim_influence_irrelevant,
         dv=.(influence),
         wid=.(mturk_id),
         between=.(train_type,stim_type),
-        within=.(xdist))
+        within=.(ydist))
 
-sim_influence_relevant$ydist <- factor(sim_influence_relevant$ydist)
+sim_influence_relevant$xdist <- factor(sim_influence_relevant$xdist)
 ezANOVA(data=sim_influence_relevant,
         dv=.(influence),
         wid=.(mturk_id),
         between=.(train_type,stim_type),
-        within=.(ydist))
+        within=.(xdist))
 
 bargraph.CI(stim_type, influence, train_type,  data=sim_influence_irrelevant)
 
@@ -313,49 +313,49 @@ xab_dimensions <- ddply(filterdata[filterdata$trial_type=="xab",], .(mturk_id, t
                        function(subset)with(subset,c(mean_score=mean(correct))))
 
 ## irrelevant dimension
-xab_influence_irrelevant <- ddply(xab_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
-  influence_measure(subset, "ydist", "mean_score")
-})
-
-# truncate the meaningless xdist = 3 rows
-xab_influence_irrelevant <- xab_influence_irrelevant[xab_influence_irrelevant$xdist < 3,]
-
-## relevant dimension
-xab_influence_relevant <- ddply(xab_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
+xab_influence_irrelevant <- ddply(xab_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
   influence_measure(subset, "xdist", "mean_score")
 })
 
 # truncate the meaningless ydist = 3 rows
-xab_influence_relevant <- xab_influence_relevant[xab_influence_relevant$ydist < 3,]
+xab_influence_irrelevant <- xab_influence_irrelevant[xab_influence_irrelevant$ydist < 3,]
+
+## relevant dimension
+xab_influence_relevant <- ddply(xab_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
+  influence_measure(subset, "ydist", "mean_score")
+})
+
+# truncate the meaningless xdist = 3 rows
+xab_influence_relevant <- xab_influence_relevant[xab_influence_relevant$xdist < 3,]
 
 # graph the results
 layout(matrix(1:4,nrow=2, byrow=T))
-bargraph.CI(xdist, influence, train_type,data=xab_influence_irrelevant[xab_influence_irrelevant$stim_type=="HD",])
-bargraph.CI(xdist, influence, train_type,data=xab_influence_irrelevant[xab_influence_irrelevant$stim_type=="LD",])
-bargraph.CI(ydist, influence, train_type,data=xab_influence_relevant[xab_influence_relevant$stim_type=="HD",])
-bargraph.CI(ydist, influence, train_type,data=xab_influence_relevant[xab_influence_relevant$stim_type=="LD",])
+bargraph.CI(ydist, influence, train_type,data=xab_influence_irrelevant[xab_influence_irrelevant$stim_type=="HD",])
+bargraph.CI(ydist, influence, train_type,data=xab_influence_irrelevant[xab_influence_irrelevant$stim_type=="LD",])
+bargraph.CI(xdist, influence, train_type,data=xab_influence_relevant[xab_influence_relevant$stim_type=="HD",])
+bargraph.CI(xdist, influence, train_type,data=xab_influence_relevant[xab_influence_relevant$stim_type=="LD",])
 
 # ANOVAs
-xab_influence_irrelevant$xdist <- factor(xab_influence_irrelevant$xdist)
+xab_influence_irrelevant$ydist <- factor(xab_influence_irrelevant$ydist)
 ezANOVA(data=xab_influence_irrelevant,
         dv=.(influence),
         wid=.(mturk_id),
         between=.(train_type,stim_type),
-        within=.(xdist))
+        within=.(ydist))
 
-xab_influence_relevant$ydist <- factor(xab_influence_relevant$ydist)
+xab_influence_relevant$xdist <- factor(xab_influence_relevant$xdist)
 ezANOVA(data=xab_influence_relevant,
         dv=.(influence),
         wid=.(mturk_id),
         between=.(train_type,stim_type),
-        within=.(ydist))
+        within=.(xdist))
 
 #### SECTION: figures ####
 
 ### Dimension data in 'raw' form
 require(grid)
 
-sd_plot <- ggplot(sd_dimensions, aes(x=xdist, y=mean_score, fill=train_type, shape=factor(ydist), group=interaction(train_type, ydist))) +
+sd_plot <- ggplot(sd_dimensions, aes(x=ydist, y=mean_score, fill=train_type, shape=factor(xdist), group=interaction(train_type, xdist))) +
   scale_shape_manual(values=c(22,23,24,25))+
   scale_fill_grey(labels=c("Control", "Category training"))+
   stat_summary(fun.data=mean_se, geom="errorbar", position=position_dodge(width=0.4), width=0.3, mult=1, colour="black") +
@@ -366,7 +366,7 @@ sd_plot <- ggplot(sd_dimensions, aes(x=xdist, y=mean_score, fill=train_type, sha
   facet_grid(. ~ stim_type)+
   theme_few()
 
-xab_plot <- ggplot(xab_dimensions, aes(x=xdist, y=mean_score, fill=train_type, shape=factor(ydist), group=interaction(train_type, ydist))) +
+xab_plot <- ggplot(xab_dimensions, aes(x=ydist, y=mean_score, fill=train_type, shape=factor(xdist), group=interaction(train_type, xdist))) +
   scale_shape_manual(values=c(22,23,24,25))+
   scale_fill_grey(labels=c("Control", "Category training"))+
   stat_summary(fun.data=mean_se, geom="errorbar", position=position_dodge(width=0.4), width=0.3, mult=1, colour="black") +
@@ -378,7 +378,7 @@ xab_plot <- ggplot(xab_dimensions, aes(x=xdist, y=mean_score, fill=train_type, s
   geom_hline(yintercept=0.5, linetype=2)+
   theme_few()
 
-sim_plot <- ggplot(sim_dimensions, aes(x=xdist, y=mean_score, fill=train_type, shape=factor(ydist), group=interaction(train_type, ydist))) +
+sim_plot <- ggplot(sim_dimensions, aes(x=ydist, y=mean_score, fill=train_type, shape=factor(xdist), group=interaction(train_type, xdist))) +
   scale_shape_manual(values=c(22,23,24,25))+
   scale_fill_grey(labels=c("Control", "Category training"))+
   stat_summary(fun.data=mean_se, geom="errorbar", position=position_dodge(width=0.4), width=0.3, mult=1, colour="black") +
@@ -554,7 +554,7 @@ ggplot(sim_influence, aes(x=dist, y=influence, fill=train_type, shape=type, grou
 
 #### SECTION: XAB analysis in depth ####
 
-data_extremes <- filterdata[filterdata$trial_type=="xab" & filterdata$xdist<3 & filterdata$ydist==0,]
+data_extremes <- filterdata[filterdata$trial_type=="xab" & filterdata$ydist<3 & filterdata$xdist==0,]
 
 data_extremes$extreme <- mapply(function(a_path, b_path){
   a <- as.numeric(strsplit(as.character(a_path),'_')[[1]][2])
