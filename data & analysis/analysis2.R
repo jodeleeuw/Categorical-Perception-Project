@@ -142,7 +142,7 @@ category_data <- filterdata[filterdata$trial_type=="singleimag",]
 # can't use 3 unit pairs because they are ALL between category.
 
 ### SD data
-sd_classic_cp <- ddply(filterdata[filterdata$trial_type=="same-different" & filterdata$ydist<3 & filterdata$xdist==0 & filterdata$distance>0,],
+sd_classic_cp <- ddply(filterdata[filterdata$trial_type=="same-different" & filterdata$xdist<3 & filterdata$ydist==0 & filterdata$distance>0,],
                        .(mturk_id, train_type, stim_type, category_type ),
                        function(subset)with(subset, c(mean_score = mean(correct))))
 layout(matrix(1:2, nrow=1))
@@ -156,7 +156,7 @@ ezANOVA(data=sd_classic_cp,
         between = .(stim_type, train_type))
 
 ### SIM data
-sim_classic_cp <- ddply(filterdata[filterdata$trial_type=="similarity" & filterdata$ydist<3 & filterdata$xdist==0,],
+sim_classic_cp <- ddply(filterdata[filterdata$trial_type=="similarity" & filterdata$xdist<3 & filterdata$ydist==0,],
                         .(mturk_id, train_type, stim_type, category_type ),
                         function(subset)with(subset, c(mean_score = mean(sim_score))))
 layout(matrix(1:2, nrow=1))
@@ -173,7 +173,7 @@ ezANOVA(data=sim_classic_cp,
 bargraph.CI(category_type, mean_score, train_type, data=sim_classic_cp)
 
 ### XAB data
-xab_classic_cp <- ddply(filterdata[filterdata$trial_type=="xab" & filterdata$ydist<3 & filterdata$xdist==0,],
+xab_classic_cp <- ddply(filterdata[filterdata$trial_type=="xab" & filterdata$xdist<3 & filterdata$ydist==0,],
                         .(mturk_id, train_type, stim_type, category_type ),
                         function(subset)with(subset, c(mean_score = mean(correct))))
 layout(matrix(1:2, nrow=1))
@@ -223,16 +223,16 @@ sd_dimensions <- ddply(sd_diff_data, .(mturk_id, train_type, stim_type, xdist, y
                        function(subset)with(subset,c(mean_score=mean(diff))))
 
 ## irrelevant dimension
-sd_influence_irrelevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
-  influence_measure(subset, "xdist", "mean_score")
+sd_influence_irrelevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
+  influence_measure(subset, "ydist", "mean_score")
 })
 
-# truncate the meaningless ydist = 3 rows
-sd_influence_irrelevant <- sd_influence_irrelevant[sd_influence_irrelevant$ydist < 3,]
+# truncate the meaningless xdist = 3 rows
+sd_influence_irrelevant <- sd_influence_irrelevant[sd_influence_irrelevant$xdist < 3,]
 
 ## relevant dimension
-sd_influence_relevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
-  influence_measure(subset, "ydist", "mean_score")
+sd_influence_relevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
+  influence_measure(subset, "xdist", "mean_score")
 })
 
 # truncate the meaningless ydist = 3 rows
