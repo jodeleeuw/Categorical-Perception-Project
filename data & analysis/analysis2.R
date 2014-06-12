@@ -8,7 +8,7 @@ require(ggthemes)
 
 #### SECTION: load all data ####
 
-pilotdata <- read.csv2('pilot_flipped_dimensions.csv', quote = "''")
+pilotdata <- read.csv2('data & analysis/raw-data/pilot_flipped_dimensions.csv', quote = "''")
 
 #### SECTION: get data columns in proper format ####
 
@@ -557,12 +557,12 @@ ggplot(sim_influence, aes(x=dist, y=influence, fill=train_type, shape=type, grou
 data_extremes <- filterdata[filterdata$trial_type=="xab" & filterdata$ydist<3 & filterdata$xdist==0,]
 
 data_extremes$extreme <- mapply(function(a_path, b_path){
-  a <- as.numeric(strsplit(as.character(a_path),'_')[[1]][2])
-  b <- as.numeric(strsplit(as.character(b_path),'_')[[1]][2])
+  a <- as.numeric(strsplit(as.character(a_path),'_')[[1]][3])
+  b <- as.numeric(strsplit(as.character(b_path),'_')[[1]][3])
   if(abs(3.5-a) > abs(3.5-b)){ return("target") }
   if(abs(3.5-a) < abs(3.5-b)){ return("foil") }
   return("equal")
-}, data_extremes$a_path, data_extremes$b_path)
+}, data_extremes$stimulus_a, data_extremes$stimulus_b)
 
 xab_extreme_cp <- ddply(data_extremes,
                         .(mturk_id, train_type, stim_type, category_type, extreme),
