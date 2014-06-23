@@ -8,7 +8,7 @@ require(ggthemes)
 
 #### SECTION: load all data ####
 
-pilotdata <- read.csv2('data & analysis/raw-data/pilot_flipped_dimensions.csv', quote = "''")
+pilotdata <- read.csv2('all_data_flipped_dimensions.csv', quote = "''")
 
 #### SECTION: get data columns in proper format ####
 
@@ -227,8 +227,14 @@ sd_influence_irrelevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_typ
   influence_measure(subset, "xdist", "mean_score")
 })
 
+sd_influence_irrelevant2 <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
+  a <- lm(mean_score~xdist, data = subset)
+  slope <- a$coefficients[['xdist']]
+})
+
 # truncate the meaningless ydist = 3 rows
 sd_influence_irrelevant <- sd_influence_irrelevant[sd_influence_irrelevant$ydist < 3,]
+sd_influence_irrelevant2 <- sd_influence_irrelevant2[sd_influence_irrelevant2$ydist < 3,]
 
 ## relevant dimension
 sd_influence_relevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
@@ -249,6 +255,13 @@ bargraph.CI(xdist, influence, train_type,data=sd_influence_relevant[sd_influence
 sd_influence_irrelevant$ydist <- factor(sd_influence_irrelevant$ydist)
 ezANOVA(data=sd_influence_irrelevant,
         dv=.(influence),
+        wid=.(mturk_id),
+        between=.(train_type,stim_type),
+        within=.(ydist))
+
+sd_influence_irrelevant2$ydist <- factor(sd_influence_irrelevant2$ydist)
+ezANOVA(data=sd_influence_irrelevant2,
+        dv=.(V1),
         wid=.(mturk_id),
         between=.(train_type,stim_type),
         within=.(ydist))
