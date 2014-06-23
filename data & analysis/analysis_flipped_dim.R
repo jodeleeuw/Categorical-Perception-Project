@@ -227,6 +227,10 @@ sd_dimensions <- ddply(sd_diff_data, .(mturk_id, train_type, stim_type, xdist, y
 sd_dimensions_block <- ddply(sd_diff_data, .(mturk_id, train_type, stim_type, xdist, ydist, block),
                        function(subset)with(subset,c(mean_score=mean(diff))))
 
+## For sd_influence_irrelevant and sd_influence_irrelevant2,
+## I'm just trying to see whether the influence measure and regression line up, even 
+## without block being considered
+
 ## irrelevant dimension (using influence measure)
 sd_influence_irrelevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
   influence_measure(subset, "xdist", "mean_score")
@@ -239,7 +243,8 @@ sd_influence_irrelevant2 <- ddply(sd_dimensions, .(mturk_id, train_type, stim_ty
   slope <- a$coefficients[['xdist']]
 })
 
-## irrelevant dimension using regression, and factoring block in. The resulting data frame has 14 NAs
+## irrelevant dimension using regression, and additionally 
+## factoring block in. The resulting data frame has 14 NAs
 
 sd_influence_irrelevant2_block <- ddply(sd_dimensions_block, .(mturk_id, train_type, stim_type, ydist, block), function(subset){
   a <- lm(mean_score~xdist, data = subset)
