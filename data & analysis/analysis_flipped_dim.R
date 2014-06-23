@@ -222,19 +222,34 @@ sd_diff_data$diff <- sapply(sd_diff_data$key_press, function(k){
 sd_dimensions <- ddply(sd_diff_data, .(mturk_id, train_type, stim_type, xdist, ydist),
                        function(subset)with(subset,c(mean_score=mean(diff))))
 
-## irrelevant dimension
+## sd dimensions but with block included as a column too
+
+sd_dimensions_block <- ddply(sd_diff_data, .(mturk_id, train_type, stim_type, xdist, ydist, block),
+                       function(subset)with(subset,c(mean_score=mean(diff))))
+
+## irrelevant dimension (using influence measure)
 sd_influence_irrelevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
   influence_measure(subset, "xdist", "mean_score")
 })
+
+## irrelevant dimension using regression
 
 sd_influence_irrelevant2 <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
   a <- lm(mean_score~xdist, data = subset)
   slope <- a$coefficients[['xdist']]
 })
 
-# truncate the meaningless ydist = 3 rows
+## irrelevant dimension using regression, and factoring block in. The resulting data frame has 14 NAs
+
+sd_influence_irrelevant2_block <- ddply(sd_dimensions_block, .(mturk_id, train_type, stim_type, ydist, block), function(subset){
+  a <- lm(mean_score~xdist, data = subset)
+  slope <- a$coefficients[['xdist']]
+})
+
+# truncate the meaningless ydist = 3 rows for the new data frames as well
 sd_influence_irrelevant <- sd_influence_irrelevant[sd_influence_irrelevant$ydist < 3,]
 sd_influence_irrelevant2 <- sd_influence_irrelevant2[sd_influence_irrelevant2$ydist < 3,]
+sd_influence_irrelevant2_block <- sd_influence_irrelevant2_block[sd_influence_irrelevant2_block$ydist < 3,]
 
 ## relevant dimension
 sd_influence_relevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
@@ -252,6 +267,9 @@ bargraph.CI(xdist, influence, train_type,data=sd_influence_relevant[sd_influence
 bargraph.CI(xdist, influence, train_type,data=sd_influence_relevant[sd_influence_relevant$stim_type=="LD",])
 
 # ANOVAs
+
+## original sd_influence_irrelevant ANOVA
+
 sd_influence_irrelevant$ydist <- factor(sd_influence_irrelevant$ydist)
 ezANOVA(data=sd_influence_irrelevant,
         dv=.(influence),
@@ -259,12 +277,36 @@ ezANOVA(data=sd_influence_irrelevant,
         between=.(train_type,stim_type),
         within=.(ydist))
 
+## ANOVA but with the regression rather than influence as dv
+
 sd_influence_irrelevant2$ydist <- factor(sd_influence_irrelevant2$ydist)
 ezANOVA(data=sd_influence_irrelevant2,
         dv=.(V1),
         wid=.(mturk_id),
         between=.(train_type,stim_type),
         within=.(ydist))
+
+## tried to get it to run with NAs but it wouldn't
+
+sd_influence_irrelevant2_block$ydist <- factor(sd_influence_irrelevant2_block$ydist)
+sd_influence_irrelevant2_block$block <- as.character(sd_influence_irrelevant2_block$block)
+ezANOVA(data=sd_influence_irrelevant2_block,
+        dv=.(V1),
+        wid=.(mturk_id),
+        between=.(train_type,stim_type),
+        within=.(ydist, block))
+
+## tried excluding the NAs and running the ANOVA, but got another error
+
+sd_influence_irrelevant2_block_comp <- sd_influence_irrelevant2_block[complete.cases(sd_influence_irrelevant2_block$V1),]
+
+sd_influence_irrelevant2_block_comp$ydist <- factor(sd_influence_irrelevant2_block_comp$ydist)
+sd_influence_irrelevant2_block_comp$block <- as.character(sd_influence_irrelevant2_block_comp$block)
+ezANOVA(data=sd_influence_irrelevant2_block_comp,
+        dv=.(V1),
+        wid=.(mturk_id),
+        between=.(train_type,stim_type),
+        within=.(ydist, block))
 
 sd_influence_relevant$xdist <- factor(sd_influence_relevant$xdist)
 ezANOVA(data=sd_influence_relevant,
