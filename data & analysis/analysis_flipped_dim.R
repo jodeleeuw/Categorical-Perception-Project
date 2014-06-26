@@ -251,16 +251,22 @@ sd_influence_irrelevant2_block <- ddply(sd_dimensions_block, .(mturk_id, train_t
   slope <- a$coefficients[['xdist']]
 })
 
+# create a new column, "scale", that codes each block's absolute change relative to block 0, 
+# for a given ydist. Block 0's absolute change is 0.
+
 sd_influence_irrelevant2_block$scaled <- apply(sd_influence_irrelevant2_block, 1, function(rowe) 
   {
+  # if block is 0, return 0--baseline
   if(rowe[5] == 0)
   {
     return(0)
   }
+  # if V1 is missing, return a missing value
   else if (is.na(rowe[6]))
   {
     return(NA)
   }
+  # subtract the value of V1 for the row corresponding to the same participant at block 0
  else
    {
     return(as.numeric(rowe[6]) - (sd_influence_irrelevant2_block[sd_influence_irrelevant2_block$mturk_id == rowe[1]
