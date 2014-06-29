@@ -8,8 +8,8 @@ require(ggthemes)
 
 #### SECTION: load all data ####
 
-sddata <- read.csv2("raw-data/all_data_sd_task.csv")
-xabsimdata <- read.csv2("raw-data/all_data_xab_and_sim_tasks.csv")
+sddata <- read.csv2("all_data_sd_task.csv")
+xabsimdata <- read.csv2("all_data_xab_and_sim_tasks.csv")
 alldata <- rbind.fill(xabsimdata,sddata)
 
 #### SECTION: get data columns in proper format ####
@@ -234,13 +234,50 @@ sd_diff_data$diff <- sapply(sd_diff_data$key_press, function(k){
 sd_dimensions <- ddply(sd_diff_data, .(mturk_id, train_type, stim_type, xdist, ydist),
                        function(subset)with(subset,c(mean_score=mean(diff))))
 
+sd_dimensions_block <- ddply(sd_diff_data, .(mturk_id, train_type, stim_type, xdist, ydist, block),
+                             function(subset)with(subset,c(mean_score=mean(diff))))
+
 ## irrelevant dimension
 sd_influence_irrelevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
   influence_measure(subset, "ydist", "mean_score")
 })
 
+sd_influence_irrelevant2 <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
+  a <- lm(mean_score~ydist, data = subset)
+  slope <- a$coefficients[['ydist']]
+})
+
+sd_influence_irrelevant2_block <- ddply(sd_dimensions_block, .(mturk_id, train_type, stim_type, xdist, block), function(subset){
+  a <- lm(mean_score~ydist, data = subset)
+  slope <- a$coefficients[['ydist']]
+})
+
+sd_influence_irrelevant2_block$abs_change <- apply(sd_influence_irrelevant2_block, 1, function(rowe) 
+{
+  # if block is 0, return 0--baseline
+  if(rowe[5] == 0)
+  {
+    return(0)
+  }
+  # if V1 is missing, return a missing value
+  else if (is.na(rowe[6]))
+  {
+    return(NA)
+  }
+  # subtract the value of V1 for the row corresponding to the same participant at block 0
+  else
+  {
+    return(as.numeric(rowe[6]) - (sd_influence_irrelevant2_block[sd_influence_irrelevant2_block$mturk_id == rowe[1]
+                                                                 & sd_influence_irrelevant2_block$xdist == rowe[4]
+                                                                 & sd_influence_irrelevant2_block$block == 0,])$V1)
+  }
+}
+)
+
 # truncate the meaningless xdist = 3 rows
 sd_influence_irrelevant <- sd_influence_irrelevant[sd_influence_irrelevant$xdist < 3,]
+sd_influence_irrelevant2 <- sd_influence_irrelevant2[sd_influence_irrelevant2$xdist < 3,]
+sd_influence_irrelevant2_block <- sd_influence_irrelevant2_block[sd_influence_irrelevant2_block$xdist < 3,]
 
 ## relevant dimension
 sd_influence_relevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
@@ -265,12 +302,28 @@ ezANOVA(data=sd_influence_irrelevant,
         between=.(train_type,stim_type),
         within=.(xdist))
 
+sd_influence_irrelevant2$xdist <- factor(sd_influence_irrelevant2$xdist)
+ezANOVA(data=sd_influence_irrelevant2,
+        dv=.(V1),
+        wid=.(mturk_id),
+        between=.(train_type,stim_type),
+        within=.(xdist))
+
+sd_influence_irrelevant2_block$xdist <- factor(sd_influence_irrelevant2_block$xdist)
+ezANOVA(data=sd_influence_irrelevant2_block,
+        dv=.(V1),
+        wid=.(mturk_id),
+        between=.(train_type,stim_type),
+        within=.(xdist, block))
+
 sd_influence_relevant$ydist <- factor(sd_influence_relevant$ydist)
 ezANOVA(data=sd_influence_relevant,
         dv=.(influence),
         wid=.(mturk_id),
         between=.(train_type,stim_type),
         within=.(ydist))
+
+# ezMixed(sd_influence_irrelevant2_block, abs_change, family = gaussian, random(mturk_id), fixed(train_type, stim_type, xdist, block))
 
 #### Similarity task
 
@@ -324,13 +377,28 @@ bargraph.CI(stim_type, influence, train_type,  data=sim_influence_irrelevant)
 xab_dimensions <- ddply(filterdata[filterdata$trial_type=="xab",], .(mturk_id, train_type, stim_type, xdist, ydist),
                        function(subset)with(subset,c(mean_score=mean(correct))))
 
+xab_dimensions_block <- ddply(filterdata[filterdata$trial_type=="xab",], .(mturk_id, train_type, stim_type, xdist, ydist, block),
+                        function(subset)with(subset,c(mean_score=mean(correct))))
+
 ## irrelevant dimension
 xab_influence_irrelevant <- ddply(xab_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
   influence_measure(subset, "ydist", "mean_score")
 })
 
+xab_influence_irrelevant2 <- ddply(xab_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
+  a <- lm(mean_score~ydist, data = subset)
+  slope <- a$coefficients[['ydist']]
+})
+
+xab_influence_irrelevant2_block <- ddply(xab_dimensions_block, .(mturk_id, train_type, stim_type, xdist, block), function(subset){
+  a <- lm(mean_score~ydist, data = subset)
+  slope <- a$coefficients[['ydist']]
+})
+
 # truncate the meaningless xdist = 3 rows
 xab_influence_irrelevant <- xab_influence_irrelevant[xab_influence_irrelevant$xdist < 3,]
+xab_influence_irrelevant2 <- xab_influence_irrelevant2[xab_influence_irrelevant2$xdist < 3,]
+xab_influence_irrelevant2_block <- xab_influence_irrelevant2_block[xab_influence_irrelevant2_block$xdist < 3,]
 
 ## relevant dimension
 xab_influence_relevant <- ddply(xab_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
@@ -361,6 +429,8 @@ ezANOVA(data=xab_influence_relevant,
         wid=.(mturk_id),
         between=.(train_type,stim_type),
         within=.(ydist))
+
+# ezMixed(xab_influence_irrelevant2_block, V1, family = gaussian, random(mturk_id), fixed(train_type, stim_type, xdist, block))
 
 #### SECTION: figures ####
 
