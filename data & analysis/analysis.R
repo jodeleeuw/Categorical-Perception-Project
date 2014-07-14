@@ -8,8 +8,8 @@ require(ggthemes)
 
 #### SECTION: load all data ####
 
-sddata <- read.csv2("all_data_sd_task.csv")
-xabsimdata <- read.csv2("all_data_xab_and_sim_tasks.csv")
+sddata <- read.csv2("data & analysis/raw-data/all_data_sd_task.csv")
+xabsimdata <- read.csv2("data & analysis/raw-data/all_data_xab_and_sim_tasks.csv")
 alldata <- rbind.fill(xabsimdata,sddata)
 
 #### SECTION: get data columns in proper format ####
@@ -284,8 +284,15 @@ sd_influence_relevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type,
   influence_measure(subset, "xdist", "mean_score")
 })
 
+sd_influence_relevant2 <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
+  a <- lm(mean_score~xdist, data = subset)
+  slope <- a$coefficients[['xdist']]
+})
+
 # truncate the meaningless ydist = 3 rows
 sd_influence_relevant <- sd_influence_relevant[sd_influence_relevant$ydist < 3,]
+sd_influence_relevant2 <- sd_influence_relevant2[sd_influence_relevant2$ydist < 3,]
+
 
 # graph the results
 layout(matrix(1:4,nrow=2, byrow=T))
@@ -336,16 +343,28 @@ sim_influence_irrelevant <- ddply(sim_dimensions, .(mturk_id, train_type, stim_t
   influence_measure(subset, "ydist", "mean_score")
 })
 
+sim_influence_irrelevant2 <- ddply(sim_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
+  a <- lm(mean_score~ydist, data = subset)
+  slope <- a$coefficients[['ydist']]
+})
+
 # truncate the meaningless xdist = 3 rows
 sim_influence_irrelevant <- sim_influence_irrelevant[sim_influence_irrelevant$xdist < 3,]
+sim_influence_irrelevant2 <- sim_influence_irrelevant2[sim_influence_irrelevant2$xdist < 3,]
 
 ## relevant dimension
 sim_influence_relevant <- ddply(sim_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
   influence_measure(subset, "xdist", "mean_score")
 })
 
+sim_influence_relevant2 <- ddply(sim_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
+  a <- lm(mean_score~xdist, data = subset)
+  slope <- a$coefficients[['xdist']]
+})
+
 # truncate the meaningless ydist = 3 rows
 sim_influence_relevant <- sim_influence_relevant[sim_influence_relevant$ydist < 3,]
+sim_influence_relevant2 <- sim_influence_relevant2[sim_influence_relevant2$ydist < 3,]
 
 # graph the results
 layout(matrix(1:4,nrow=2, byrow=T))
@@ -405,8 +424,15 @@ xab_influence_relevant <- ddply(xab_dimensions, .(mturk_id, train_type, stim_typ
   influence_measure(subset, "xdist", "mean_score")
 })
 
+xab_influence_relevant2 <- ddply(xab_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
+  a <- lm(mean_score~xdist, data = subset)
+  slope <- a$coefficients[['xdist']]
+})
+
 # truncate the meaningless ydist = 3 rows
 xab_influence_relevant <- xab_influence_relevant[xab_influence_relevant$ydist < 3,]
+xab_influence_relevant2 <- xab_influence_relevant2[xab_influence_relevant2$ydist < 3,]
+
 
 # graph the results
 layout(matrix(1:4,nrow=2, byrow=T))
@@ -653,3 +679,57 @@ xab_extreme_cp <- ddply(data_extremes,
 bargraph.CI(extreme, mean_score, train_type, data=xab_extreme_cp[xab_extreme_cp$stim_type=="HD" & xab_extreme_cp$category_type=="WITHIN",])
 
 t.test(mean_score ~ extreme, paired=T, data=xab_extreme_cp[xab_extreme_cp$stim_type=="HD" & xab_extreme_cp$category_type=="WITHIN" & xab_extreme_cp$train_type=="TRAIN",])
+
+
+#### SECTION: plotting compression expansion effects spatially ####
+
+get_spatial_pair_type <- function(a_path, b_path, which_dimension) {
+
+  if(str_detect(a_path, "<")) {
+    a_path <- str_extract(a_path, 'img/.*jpg')
+    b_path <- str_extract(b_path, 'img/.*jpg')
+  }
+  
+  if(which_dimension == 'x') {
+    pair = 2
+  } else if(which_dimension == 'y') {
+    pair = 3
+  }
+  a <- as.numeric(strsplit(as.character(a_path),'_')[[1]][pair])
+  b <- as.numeric(strsplit(as.character(b_path),'_')[[1]][pair])
+  if(a > b) {
+    c = a;
+    a = b;
+    b = c;
+  }
+  pair_type <- paste(a,b,sep="-");
+  return(pair_type)
+}
+
+sd_classic_cp_spatial_data <- subset(filterdata, trial_type == 'same-different' & xdist == 1 & ydist == 0)
+sd_classic_cp_spatial_data$spatial_pair <- mapply(function(a,b) {
+  return(get_spatial_pair_type(a,b,'x'));
+}, sd_classic_cp_spatial_data$a_path, sd_classic_cp_spatial_data$b_path)
+
+sd_classic_cp_sd <- ddply(sd_classic_cp_spatial_data, .(mturk_id, train_type, stim_type, spatial_pair),
+                       function(subset)with(subset, c(mean_score = mean(correct))))
+
+xab_classic_cp_spatial_data <- subset(filterdata, trial_type == 'xab' & xdist == 1 & ydist == 0)
+xab_classic_cp_spatial_data$spatial_pair <- mapply(function(a,b) {
+  return(get_spatial_pair_type(a,b,'x'));
+}, xab_classic_cp_spatial_data$a_path, xab_classic_cp_spatial_data$b_path)
+
+xab_classic_cp_sd <- ddply(xab_classic_cp_spatial_data, .(mturk_id, train_type, stim_type, spatial_pair),
+                          function(subset)with(subset, c(mean_score = mean(correct))))
+
+
+sim_classic_cp_spatial_data <- subset(filterdata, trial_type == 'similarity' & xdist == 1 & ydist == 0)
+sim_classic_cp_spatial_data$spatial_pair <- mapply(function(a,b) {
+  return(get_spatial_pair_type(a,b,'x'));
+}, sim_classic_cp_spatial_data$a_path, sim_classic_cp_spatial_data$b_path)
+
+sim_classic_cp_sd <- ddply(sim_classic_cp_spatial_data, .(mturk_id, train_type, stim_type, spatial_pair),
+                          function(subset)with(subset, c(mean_score = mean(sim_score))))
+
+bargraph.CI(spatial_pair, mean_score, train_type, data = subset(xab_classic_cp_sd, stim_type=="HD"))
+

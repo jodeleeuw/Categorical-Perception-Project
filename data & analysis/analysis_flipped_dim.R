@@ -288,8 +288,15 @@ sd_influence_relevant <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type,
   influence_measure(subset, "ydist", "mean_score")
 })
 
+sd_influence_relevant2 <- ddply(sd_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
+  a <- lm(mean_score~ydist, data = subset)
+  slope <- a$coefficients[['ydist']]
+})
+
 # truncate the meaningless xdist = 3 rows
 sd_influence_relevant <- sd_influence_relevant[sd_influence_relevant$xdist < 3,]
+sd_influence_relevant2 <- sd_influence_relevant2[sd_influence_relevant2$xdist < 3,]
+
 
 # graph the results
 layout(matrix(1:4,nrow=2, byrow=T))
@@ -360,16 +367,28 @@ sim_influence_irrelevant <- ddply(sim_dimensions, .(mturk_id, train_type, stim_t
   influence_measure(subset, "xdist", "mean_score")
 })
 
+sim_influence_irrelevant2 <- ddply(sim_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
+  a <- lm(mean_score~xdist, data = subset)
+  slope <- a$coefficients[['xdist']]
+})
+
 # truncate the meaningless ydist = 3 rows
 sim_influence_irrelevant <- sim_influence_irrelevant[sim_influence_irrelevant$ydist < 3,]
+sim_influence_irrelevant2 <- sim_influence_irrelevant2[sim_influence_irrelevant2$ydist < 3,]
 
 ## relevant dimension
 sim_influence_relevant <- ddply(sim_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
   influence_measure(subset, "ydist", "mean_score")
 })
 
+sim_influence_relevant2 <- ddply(sim_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
+  a <- lm(mean_score~ydist, data = subset)
+  slope <- a$coefficients[['ydist']]
+})
+
 # truncate the meaningless xdist = 3 rows
 sim_influence_relevant <- sim_influence_relevant[sim_influence_relevant$xdist < 3,]
+sim_influence_relevant2 <- sim_influence_relevant2[sim_influence_relevant2$xdist < 3,]
 
 # graph the results
 layout(matrix(1:4,nrow=2, byrow=T))
@@ -429,8 +448,14 @@ xab_influence_relevant <- ddply(xab_dimensions, .(mturk_id, train_type, stim_typ
   influence_measure(subset, "ydist", "mean_score")
 })
 
+xab_influence_relevant2 <- ddply(xab_dimensions, .(mturk_id, train_type, stim_type, xdist), function(subset){
+  a <- lm(mean_score~ydist, data = subset)
+  slope <- a$coefficients[['ydist']]
+})
+
 # truncate the meaningless xdist = 3 rows
 xab_influence_relevant <- xab_influence_relevant[xab_influence_relevant$xdist < 3,]
+xab_influence_relevant2 <- xab_influence_relevant2[xab_influence_relevant2$xdist < 3,]
 
 # graph the results
 layout(matrix(1:4,nrow=2, byrow=T))
