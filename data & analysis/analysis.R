@@ -157,6 +157,15 @@ category_data <- filterdata[filterdata$trial_type=="singleimag",]
 sd_classic_cp <- ddply(filterdata[filterdata$trial_type=="same-different" & filterdata$xdist<3 & filterdata$ydist==0 & filterdata$distance>0,],
                        .(mturk_id, train_type, stim_type, category_type ),
                        function(subset)with(subset, c(mean_score = mean(correct))))
+
+sd_classic_cp_rel0 <- ddply(filterdata[filterdata$trial_type=="same-different" & filterdata$xdist==0,],
+                       .(mturk_id, train_type, stim_type),
+                       function(subset)with(subset, c(mean_score = mean(correct))))
+
+sd_classic_cp_irrel0 <- ddply(filterdata[filterdata$trial_type=="same-different" & filterdata$ydist==0,],
+                              .(mturk_id, train_type, stim_type),
+                              function(subset)with(subset, c(mean_score = mean(correct))))
+
 layout(matrix(1:2, nrow=1))
 bargraph.CI(category_type, mean_score, train_type, data = sd_classic_cp[sd_classic_cp$stim_type=="HD",], ylim=c(0,1), main="HD stimuli", ylab="Mean Accuracy", xlab="Category Comparison Type")
 bargraph.CI(category_type, mean_score, train_type, data = sd_classic_cp[sd_classic_cp$stim_type=="LD",], ylim=c(0,1), main="LD stimuli", legend=T, xlab="Category Comparison Type")
@@ -167,10 +176,29 @@ ezANOVA(data=sd_classic_cp,
         within = .(category_type),
         between = .(stim_type, train_type))
 
+ezANOVA(data=sd_classic_cp_rel0,
+        dv = .(mean_score),
+        wid = .(mturk_id),
+        between = .(stim_type, train_type))
+
+ezANOVA(data=sd_classic_cp_irrel0,
+        dv = .(mean_score),
+        wid = .(mturk_id),
+        between = .(stim_type, train_type))
+
 ### SIM data
 sim_classic_cp <- ddply(filterdata[filterdata$trial_type=="similarity" & filterdata$xdist<3 & filterdata$ydist==0,],
                         .(mturk_id, train_type, stim_type, category_type ),
                         function(subset)with(subset, c(mean_score = mean(sim_score))))
+
+sim_classic_cp_rel0 <- ddply(filterdata[filterdata$trial_type=="similarity" & filterdata$xdist==0,],
+                        .(mturk_id, train_type, stim_type),
+                        function(subset)with(subset, c(mean_score = mean(sim_score))))
+
+sim_classic_cp_irrel0 <- ddply(filterdata[filterdata$trial_type=="similarity" & filterdata$ydist==0,],
+                                 .(mturk_id, train_type, stim_type),
+                                 function(subset)with(subset, c(mean_score = mean(sim_score))))
+
 layout(matrix(1:2, nrow=1))
 bargraph.CI(category_type, mean_score, train_type, data = sim_classic_cp[sim_classic_cp$stim_type=="HD",], ylim=c(0,75), main="HD stimuli", ylab="Mean Similarity Score", xlab="Category Comparison Type")
 bargraph.CI(category_type, mean_score, train_type, data = sim_classic_cp[sim_classic_cp$stim_type=="LD",], ylim=c(0,75), main="LD stimuli", legend=T, xlab="Category Comparison Type")
@@ -181,6 +209,16 @@ ezANOVA(data=sim_classic_cp,
         within = .(category_type),
         between = .(stim_type, train_type))
 
+ezANOVA(data=sim_classic_cp_rel0,
+        dv = .(mean_score),
+        wid = .(mturk_id),
+        between = .(stim_type, train_type))
+
+ezANOVA(data=sim_classic_cp_irrel0,
+        dv = .(mean_score),
+        wid = .(mturk_id),
+        between = .(stim_type, train_type))
+
 # graphing the category_type x train type interaction
 bargraph.CI(category_type, mean_score, train_type, data=sim_classic_cp)
 
@@ -188,6 +226,15 @@ bargraph.CI(category_type, mean_score, train_type, data=sim_classic_cp)
 xab_classic_cp <- ddply(filterdata[filterdata$trial_type=="xab" & filterdata$xdist<3 & filterdata$ydist==0,],
                         .(mturk_id, train_type, stim_type, category_type ),
                         function(subset)with(subset, c(mean_score = mean(correct))))
+
+xab_classic_cp_rel0 <- ddply(filterdata[filterdata$trial_type=="xab" & filterdata$xdist==0,],
+                        .(mturk_id, train_type, stim_type),
+                        function(subset)with(subset, c(mean_score = mean(correct))))
+
+xab_classic_cp_irrel0 <- ddply(filterdata[filterdata$trial_type=="xab" & filterdata$ydist==0,],
+                                 .(mturk_id, train_type, stim_type),
+                                 function(subset)with(subset, c(mean_score = mean(correct))))
+
 layout(matrix(1:2, nrow=1))
 bargraph.CI(category_type, mean_score, train_type, data = xab_classic_cp[xab_classic_cp$stim_type=="HD",], ylim=c(0.5,0.9), main="HD stimuli", ylab="Mean Accuracy", xlab="Category Comparison Type")
 bargraph.CI(category_type, mean_score, train_type, data = xab_classic_cp[xab_classic_cp$stim_type=="LD",], ylim=c(0.5,0.9), main="LD stimuli", legend=T, xlab="Category Comparison Type")
@@ -196,6 +243,16 @@ ezANOVA(data=xab_classic_cp,
         dv = .(mean_score),
         wid = .(mturk_id),
         within = .(category_type),
+        between = .(stim_type, train_type))
+
+ezANOVA(data=xab_classic_cp_rel0,
+        dv = .(mean_score),
+        wid = .(mturk_id),
+        between = .(stim_type, train_type))
+
+ezANOVA(data=xab_classic_cp_irrel0,
+        dv = .(mean_score),
+        wid = .(mturk_id),
         between = .(stim_type, train_type))
 
 #### SECTION: Influence of dimensions ####
@@ -273,6 +330,9 @@ sd_influence_irrelevant2_block$abs_change <- apply(sd_influence_irrelevant2_bloc
   }
 }
 )
+
+sd_influence_irrelevant2_block$xdist <- as.numeric(sd_influence_irrelevant2_block$xdist)
+sd_influence_irrelevant2_block$block <- as.numeric(sd_influence_irrelevant2_block$block)
 
 # truncate the meaningless xdist = 3 rows
 sd_influence_irrelevant <- sd_influence_irrelevant[sd_influence_irrelevant$xdist < 3,]
@@ -400,6 +460,31 @@ xab_influence_irrelevant <- xab_influence_irrelevant[xab_influence_irrelevant$xd
 xab_influence_irrelevant2 <- xab_influence_irrelevant2[xab_influence_irrelevant2$xdist < 3,]
 xab_influence_irrelevant2_block <- xab_influence_irrelevant2_block[xab_influence_irrelevant2_block$xdist < 3,]
 
+xab_influence_irrelevant2_block$abs_change <- apply(xab_influence_irrelevant2_block, 1, function(rowe) 
+{
+  # if block is 0, return 0--baseline
+  if(rowe[5] == 0)
+  {
+    return(0)
+  }
+  # if V1 is missing, return a missing value
+  else if (is.na(rowe[6]))
+  {
+    return(NA)
+  }
+  # subtract the value of V1 for the row corresponding to the same participant at block 0
+  else
+  {
+    return(as.numeric(rowe[6]) - (xab_influence_irrelevant2_block[xab_influence_irrelevant2_block$mturk_id == rowe[1]
+                                                                 & xab_influence_irrelevant2_block$xdist == rowe[4]
+                                                                 & xab_influence_irrelevant2_block$block == 0,])$V1)
+  }
+}
+)
+
+xab_influence_irrelevant2_block$xdist <- as.numeric(xab_influence_irrelevant2_block$xdist)
+xab_influence_irrelevant2_block$block <- as.numeric(xab_influence_irrelevant2_block$block)
+
 ## relevant dimension
 xab_influence_relevant <- ddply(xab_dimensions, .(mturk_id, train_type, stim_type, ydist), function(subset){
   influence_measure(subset, "xdist", "mean_score")
@@ -429,6 +514,30 @@ ezANOVA(data=xab_influence_relevant,
         wid=.(mturk_id),
         between=.(train_type,stim_type),
         within=.(ydist))
+
+layout(matrix(1:4,nrow=2, byrow=T))
+lineplot.CI(block,V1,train_type,data=sd_influence_irrelevant2_block[sd_influence_irrelevant2_block$stim_type=="LD",],
+            xlab="Block",ylab="influence",main="sd regression block by train_type LD")
+lineplot.CI(block,V1,train_type,data=sd_influence_irrelevant2_block[sd_influence_irrelevant2_block$stim_type=="HD",],
+            xlab="Block",ylab="influence",main="sd regression block by train_type HD")
+
+layout(matrix(1:4,nrow=2, byrow=T))
+lineplot.CI(block,abs_change,train_type,data=sd_influence_irrelevant2_block[sd_influence_irrelevant2_block$stim_type=="LD",],
+            xlab="Block",ylab="influence",main="sd abs_change block by train_type LD")
+lineplot.CI(block,abs_change,train_type,data=sd_influence_irrelevant2_block[sd_influence_irrelevant2_block$stim_type=="HD",],
+            xlab="Block",ylab="influence",main="sd abs_change block by train_type HD")
+
+layout(matrix(1:4,nrow=2, byrow=T))
+lineplot.CI(block,V1,train_type,data=xab_influence_irrelevant2_block[xab_influence_irrelevant2_block$stim_type=="LD",],
+            xlab="Block",ylab="influence",main="xab regression block by train_type LD")
+lineplot.CI(block,V1,train_type,data=xab_influence_irrelevant2_block[xab_influence_irrelevant2_block$stim_type=="HD",],
+            xlab="Block",ylab="influence",main="xab regression block by train_type HD")
+
+layout(matrix(1:4,nrow=2, byrow=T))
+lineplot.CI(block,abs_change,train_type,data=xab_influence_irrelevant2_block[xab_influence_irrelevant2_block$stim_type=="LD",],
+            xlab="Block",ylab="influence",main="xab abs_change block by train_type LD")
+lineplot.CI(block,abs_change,train_type,data=xab_influence_irrelevant2_block[xab_influence_irrelevant2_block$stim_type=="HD",],
+            xlab="Block",ylab="influence",main="xab abs_change block by train_type HD")
 
 # ezMixed(xab_influence_irrelevant2_block, V1, family = gaussian, random(mturk_id), fixed(train_type, stim_type, xdist, block))
 
