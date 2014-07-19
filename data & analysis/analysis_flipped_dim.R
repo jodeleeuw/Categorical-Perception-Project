@@ -8,7 +8,7 @@ require(ggthemes)
 
 #### SECTION: load all data ####
 
-pilotdata <- read.csv2('all_data_flipped_dimensions.csv', quote = "''")
+pilotdata <- read.csv2('data & analysis/raw-data/all_data_flipped_dimensions.csv', quote = "'")
 
 #### SECTION: get data columns in proper format ####
 

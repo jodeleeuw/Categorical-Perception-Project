@@ -41,12 +41,23 @@ influencedata_flipped$study = 'flipped'
 
 influencedata_all <- rbind(influencedata_original, influencedata_flipped)
 
+influencedata_all$feature = mapply(function(s, t){
+  if(s=="original"){
+    if(t == "Irrelevant") { return("tail"); }
+    if(t == "Relevant") { return("shape"); }
+  } else {
+    if(t == "Irrelevant") { return("shape"); }
+    if(t == "Relevant") { return("tail"); }
+  }
+}, influencedata_all$study, influencedata_all$dimension)
+
 #save(influencedata_all, file="influencedata.Rdata")
 
 require(ggplot2)
 ggplot(influencedata_all, aes(x = dimension, y = V1, fill=train_type))+
   stat_summary(fun.y = mean, geom="bar", position="dodge")+
   stat_summary(fun.data=mean_se, geom="errorbar", width=0.2, colour="black", position=position_dodge(width=0.9)) +
-  facet_grid(study ~ task)
+  scale_fill_manual(values = c(rgb(192/255,81/255,78/255), rgb(135/255,35/255,40/255)))+
+  facet_grid(feature ~ task)
 
 
