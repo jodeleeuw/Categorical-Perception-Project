@@ -8,8 +8,8 @@ require(ggthemes)
 
 #### SECTION: load all data ####
 
-sddata <- read.csv2("all_data_sd_task.csv")
-xabsimdata <- read.csv2("all_data_xab_and_sim_tasks.csv")
+sddata <- read.csv2("data & analysis/raw-data/all_data_sd_task.csv")
+xabsimdata <- read.csv2("data & analysis/raw-data/all_data_xab_and_sim_tasks.csv")
 alldata <- rbind.fill(xabsimdata,sddata)
 
 #### SECTION: get data columns in proper format ####
@@ -158,13 +158,16 @@ sd_classic_cp <- ddply(filterdata[filterdata$trial_type=="same-different" & filt
                        .(mturk_id, train_type, stim_type, category_type ),
                        function(subset)with(subset, c(mean_score = mean(correct))))
 
-sd_classic_cp_rel0 <- ddply(filterdata[filterdata$trial_type=="same-different" & filterdata$xdist==0,],
+sd_classic_cp_rel0 <- ddply(filterdata[filterdata$trial_type=="same-different" & filterdata$xdist==0 & filterdata$distance >0,],
                        .(mturk_id, train_type, stim_type),
                        function(subset)with(subset, c(mean_score = mean(correct))))
 
-sd_classic_cp_irrel0 <- ddply(filterdata[filterdata$trial_type=="same-different" & filterdata$ydist==0,],
+sd_classic_cp_irrel0 <- ddply(filterdata[filterdata$trial_type=="same-different" & filterdata$ydist==0 & filterdata$distance > 0,],
                               .(mturk_id, train_type, stim_type),
                               function(subset)with(subset, c(mean_score = mean(correct))))
+
+bargraph.CI(stim_type, mean_score, train_type, data=sd_classic_cp_rel0, ylim=c(0,1.0))
+bargraph.CI(stim_type, mean_score, train_type, data=sd_classic_cp_irrel0, ylim=c(0,1.0))
 
 layout(matrix(1:2, nrow=1))
 bargraph.CI(category_type, mean_score, train_type, data = sd_classic_cp[sd_classic_cp$stim_type=="HD",], ylim=c(0,1), main="HD stimuli", ylab="Mean Accuracy", xlab="Category Comparison Type")
@@ -187,6 +190,7 @@ ezANOVA(data=sd_classic_cp_irrel0,
         between = .(stim_type, train_type))
 
 ### SIM data
+
 sim_classic_cp <- ddply(filterdata[filterdata$trial_type=="similarity" & filterdata$xdist<3 & filterdata$ydist==0,],
                         .(mturk_id, train_type, stim_type, category_type ),
                         function(subset)with(subset, c(mean_score = mean(sim_score))))
@@ -198,6 +202,9 @@ sim_classic_cp_rel0 <- ddply(filterdata[filterdata$trial_type=="similarity" & fi
 sim_classic_cp_irrel0 <- ddply(filterdata[filterdata$trial_type=="similarity" & filterdata$ydist==0,],
                                  .(mturk_id, train_type, stim_type),
                                  function(subset)with(subset, c(mean_score = mean(sim_score))))
+
+bargraph.CI(stim_type, mean_score, train_type, data=sim_classic_cp_rel0, ylim = c(0,100))
+bargraph.CI(stim_type, mean_score, train_type, data=sim_classic_cp_irrel0, ylim = c(0,100))
 
 layout(matrix(1:2, nrow=1))
 bargraph.CI(category_type, mean_score, train_type, data = sim_classic_cp[sim_classic_cp$stim_type=="HD",], ylim=c(0,75), main="HD stimuli", ylab="Mean Similarity Score", xlab="Category Comparison Type")
@@ -234,6 +241,9 @@ xab_classic_cp_rel0 <- ddply(filterdata[filterdata$trial_type=="xab" & filterdat
 xab_classic_cp_irrel0 <- ddply(filterdata[filterdata$trial_type=="xab" & filterdata$ydist==0,],
                                  .(mturk_id, train_type, stim_type),
                                  function(subset)with(subset, c(mean_score = mean(correct))))
+
+bargraph.CI(stim_type, mean_score, train_type, data=xab_classic_cp_rel0, ylim=c(0,1))
+bargraph.CI(stim_type, mean_score, train_type, data=xab_classic_cp_irrel0, ylim=c(0,1))
 
 layout(matrix(1:2, nrow=1))
 bargraph.CI(category_type, mean_score, train_type, data = xab_classic_cp[xab_classic_cp$stim_type=="HD",], ylim=c(0.5,0.9), main="HD stimuli", ylab="Mean Accuracy", xlab="Category Comparison Type")
