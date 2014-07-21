@@ -47,8 +47,8 @@ sd_classic_cp_all <- rbind(sd_classic_cp_shape0, sd_classic_cp_tail0)
 ezANOVA(data=sd_classic_cp_all,
         dv = .(mean_score),
         wid = .(mturk_id),
-        within = .(feature_type),
-        between = .(stim_type, train_type, experiment))
+        within = .(feature_type, varying_dimension),
+        between = .(stim_type, train_type))
 
 sim_classic_cp_shape0 <- ddply(filterdata_all[filterdata_all$trial_type=="similarity" & filterdata_all$xdist==0,],
                               .(mturk_id, train_type, stim_type, experiment),
@@ -83,8 +83,8 @@ sim_classic_cp_all <- rbind(sim_classic_cp_shape0, sim_classic_cp_tail0)
 ezANOVA(data=sim_classic_cp_all,
         dv = .(mean_score),
         wid = .(mturk_id),
-        within = .(feature_type),
-        between = .(stim_type, train_type, experiment))
+        within = .(feature_type, varying_dimension),
+        between = .(stim_type, train_type))
 
 xab_classic_cp_shape0 <- ddply(filterdata_all[filterdata_all$trial_type=="xab" & filterdata_all$xdist==0,],
                               .(mturk_id, train_type, stim_type, experiment),
@@ -119,8 +119,8 @@ xab_classic_cp_all <- rbind(xab_classic_cp_shape0, xab_classic_cp_tail0)
 ezANOVA(data=xab_classic_cp_all,
         dv = .(mean_score),
         wid = .(mturk_id),
-        within = .(feature_type),
-        between = .(stim_type, train_type, experiment))
+        within = .(feature_type, varying_dimension),
+        between = .(stim_type, train_type))
 
 bargraph.CI(stim_type, mean_score, train_type, 
             data = sd_classic_cp_all[sd_classic_cp_all$varying_dimension=="SHAPE" & 
