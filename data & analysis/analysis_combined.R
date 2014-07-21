@@ -6,9 +6,9 @@ require(ez)
 require(ggplot2)
 require(ggthemes)
 
-filterdata_original <- read.csv(file="raw-data/filterdata_original.csv")
+filterdata_original <- read.csv(file="filterdata_original.csv")
 filterdata_original$relDimension <- "SHAPE"
-filterdata_flipped <- read.csv(file="raw-data/filterdata_flipped.csv")
+filterdata_flipped <- read.csv(file="filterdata_flipped.csv")
 filterdata_flipped$relDimension <- "TAIL"
 filterdata_all <- rbind(filterdata_original, filterdata_flipped)
 
@@ -73,3 +73,71 @@ ezANOVA(data=xab_classic_cp_all,
         wid = .(mturk_id),
         within = .(constant_dimension),
         between = .(stim_type, train_type, relDimension))
+
+bargraph.CI(stim_type, mean_score, train_type, 
+            data = sd_classic_cp_all[sd_classic_cp_all$constant_dimension=="SHAPE" & 
+                                       sd_classic_cp_all$relDimension=="SHAPE",], 
+             main="", ylab="", xlab="", legend = T)
+
+bargraph.CI(stim_type, mean_score, train_type, 
+            data = sd_classic_cp_all[sd_classic_cp_all$constant_dimension=="TAIL" & 
+                                       sd_classic_cp_all$relDimension=="SHAPE",], 
+            main="", ylab="", xlab="", legend = T)
+
+bargraph.CI(stim_type, mean_score, train_type, 
+            data = sd_classic_cp_all[sd_classic_cp_all$constant_dimension=="TAIL" & 
+                                       sd_classic_cp_all$relDimension=="TAIL",], 
+            main="", ylab="", xlab="", legend = T)
+
+bargraph.CI(stim_type, mean_score, train_type, 
+            data = sd_classic_cp_all[sd_classic_cp_all$constant_dimension=="SHAPE" & 
+                                       sd_classic_cp_all$relDimension=="TAIL",], 
+            main="", ylab="", xlab="", legend = T)
+
+bargraph.CI(stim_type, mean_score, train_type, 
+            data = sim_classic_cp_all[sim_classic_cp_all$constant_dimension=="SHAPE" & 
+                                       sim_classic_cp_all$relDimension=="SHAPE",], 
+            main="", ylab="", xlab="", legend = T)
+
+layout(matrix(1:2, nrow=1))
+bargraph.CI(train_type, mean_score, 
+            data = sim_classic_cp_all[sim_classic_cp_all$relDimension=="SHAPE",],  
+            main="SHAPE RELEVANT", ylab="", xlab="")
+bargraph.CI(train_type, mean_score, 
+            data = sim_classic_cp_all[sim_classic_cp_all$relDimension=="TAIL",],  
+            main="TAIL RELEVANT", ylab="", xlab="", legend = T)
+
+bargraph.CI(stim_type, mean_score, train_type, 
+            data = sim_classic_cp_all[sim_classic_cp_all$constant_dimension=="TAIL" & 
+                                       sim_classic_cp_all$relDimension=="SHAPE",], 
+            main="", ylab="", xlab="", legend = T)
+
+bargraph.CI(stim_type, mean_score, train_type, 
+            data = sim_classic_cp_all[sim_classic_cp_all$constant_dimension=="TAIL" & 
+                                       sim_classic_cp_all$relDimension=="TAIL",], 
+            main="", ylab="", xlab="", legend = T)
+
+bargraph.CI(stim_type, mean_score, train_type, 
+            data = sim_classic_cp_all[sim_classic_cp_all$constant_dimension=="SHAPE" & 
+                                       sim_classic_cp_all$relDimension=="TAIL",], 
+            main="", ylab="", xlab="", legend = T)
+
+bargraph.CI(stim_type, mean_score, train_type, 
+            data = xab_classic_cp_all[xab_classic_cp_all$constant_dimension=="SHAPE" & 
+                                        xab_classic_cp_all$relDimension=="SHAPE",], 
+            main="", ylab="", xlab="", legend = T)
+
+bargraph.CI(stim_type, mean_score, train_type, 
+            data = xab_classic_cp_all[xab_classic_cp_all$constant_dimension=="TAIL" & 
+                                        xab_classic_cp_all$relDimension=="SHAPE",], 
+            main="", ylab="", xlab="", legend = T)
+
+bargraph.CI(stim_type, mean_score, train_type, 
+            data = xab_classic_cp_all[xab_classic_cp_all$constant_dimension=="TAIL" & 
+                                        xab_classic_cp_all$relDimension=="TAIL",], 
+            main="", ylab="", xlab="", legend = T)
+
+bargraph.CI(stim_type, mean_score, train_type, 
+            data = xab_classic_cp_all[xab_classic_cp_all$constant_dimension=="SHAPE" & 
+                                        xab_classic_cp_all$relDimension=="TAIL",], 
+            main="", ylab="", xlab="", legend = T)
