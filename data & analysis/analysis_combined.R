@@ -1,4 +1,4 @@
-#### SECTION: required packages ####
+#### required packages ####
 
 require(plyr)
 require(sciplot)
@@ -6,192 +6,134 @@ require(ez)
 require(ggplot2)
 require(ggthemes)
 
-filterdata_original <- read.csv(file="filterdata_original.csv")
-filterdata_original$experiment <- "original"
-filterdata_flipped <- read.csv(file="filterdata_flipped.csv")
-filterdata_flipped$experiment <- "flipped"
-filterdata_all <- rbind(filterdata_original, filterdata_flipped)
+#### load data ####
 
-### SD data
+alldata <- read.csv2('data & analysis/raw-data/filtered-data-no-mturk-id.csv')
 
-sd_classic_cp_shape0 <- ddply(filterdata_all[filterdata_all$trial_type=="same-different" & filterdata_all$xdist==0 & filterdata_all$distance >0,],
-                            .(mturk_id, train_type, stim_type, experiment),
-                            function(subset)with(subset, c(mean_score = mean(correct))))
+#### adding columns for relevant_distance and irrelevant_distance
+alldata$relevant_distance <- mapply(function(x,y,relevant){
+  if(relevant == 'shape-relevant'){ return(x) }
+  if(relevant == 'tail-relevant'){ return(y) }
+}, alldata$xdist, alldata$ydist, alldata$dimension)
 
-sd_classic_cp_shape0$varying_dimension <- "TAIL"
+alldata$irrelevant_distance <- mapply(function(x,y,relevant){
+  if(relevant == 'shape-relevant'){ return(y) }
+  if(relevant == 'tail-relevant'){ return(x) }
+}, alldata$xdist, alldata$ydist, alldata$dimension)
 
-sd_classic_cp_shape0$feature_type <- sapply(sd_classic_cp_shape0$experiment, function(experiment) { 
-  if(experiment == 'original') {
-    return('irrelevant')
-  } else {
-    return('relevant')
-  }
+#### training data ####
+
+training_data <- subset(alldata, trial_type == "adaptive_t")
+subject_training_info <- ddply(training_data, .(mturk_id, stim_type), function(s){
+  return(c(trial_count=nrow(subset(s, trial_type=="adaptive_t"))))
 })
 
-sd_classic_cp_tail0 <- ddply(filterdata_all[filterdata_all$trial_type=="same-different" & filterdata_all$ydist==0 & filterdata_all$distance > 0,],
-                              .(mturk_id, train_type, stim_type, experiment),
-                              function(subset)with(subset, c(mean_score = mean(correct))))
+# does it take more training trials to learn LD stimuli versus HD stimuli?
+t.test(trial_count ~ stim_type, data=subject_training_info)
 
-sd_classic_cp_tail0$varying_dimension <- "SHAPE"
+#### testing data ####
 
-sd_classic_cp_tail0$feature_type <- sapply(sd_classic_cp_tail0$experiment, function(experiment) { 
-  if(experiment == 'original') {
-    return('relevant')
-  } else {
-    return('irrelevant')
-  }
+similarity_test_data <- subset(alldata, trial_type == "similarity")
+sd_test_data <- subset(alldata, trial_type == "same-different" & distance > 0) # exclude same trials
+xab_test_data <- subset(alldata, trial_type == "xab")
+
+#### summarized data: within v between ####
+# this section is looking at within versus between analysis ignoring factors
+# like dimension of variation and distance.
+
+w_v_bw_sim <- ddply(similarity_test_data, .(mturk_id, category_type, train_type, stim_type), function(s){
+  c(mean_sim_score = mean(s$sim_score))
 })
+layout(c(1,2))
+bargraph.CI(category_type, mean_sim_score, train_type, data=subset(w_v_bw_sim, stim_type=="LD"), legend=T)
+bargraph.CI(category_type, mean_sim_score, train_type, data=subset(w_v_bw_sim, stim_type=="HD"), legend=T)
+ezANOVA(data=w_v_bw_sim, dv=mean_sim_score, wid=mturk_id, between=.(train_type, stim_type), within=(category_type))
 
-sd_classic_cp_all <- rbind(sd_classic_cp_shape0, sd_classic_cp_tail0)
-
-ezANOVA(data=sd_classic_cp_all,
-        dv = .(mean_score),
-        wid = .(mturk_id),
-        within = .(feature_type, varying_dimension),
-        between = .(stim_type, train_type))
-
-sim_classic_cp_shape0 <- ddply(filterdata_all[filterdata_all$trial_type=="similarity" & filterdata_all$xdist==0,],
-                              .(mturk_id, train_type, stim_type, experiment),
-                              function(subset)with(subset, c(mean_score = mean(sim_score))))
-
-sim_classic_cp_shape0$varying_dimension <- "TAIL"
-
-sim_classic_cp_shape0$feature_type <- sapply(sim_classic_cp_shape0$experiment, function(experiment) { 
-  if(experiment == 'original') {
-    return('irrelevant')
-  } else {
-    return('relevant')
-  }
+w_v_bw_xab <- ddply(xab_test_data, .(mturk_id, category_type, train_type, stim_type), function(s){
+  c(mean_score = mean(s$correct))
 })
+layout(c(1,2))
+bargraph.CI(category_type, mean_score, train_type, data=subset(w_v_bw_xab, stim_type=="LD"), legend=T)
+bargraph.CI(category_type, mean_score, train_type, data=subset(w_v_bw_xab, stim_type=="HD"), legend=T)
+ezANOVA(data=w_v_bw_xab, dv=mean_score, wid=mturk_id, between=.(train_type, stim_type), within=(category_type))
 
-sim_classic_cp_tail0 <- ddply(filterdata_all[filterdata_all$trial_type=="similarity" & filterdata_all$ydist==0,],
-                             .(mturk_id, train_type, stim_type, experiment),
-                             function(subset)with(subset, c(mean_score = mean(sim_score))))
-
-sim_classic_cp_tail0$varying_dimension <- "SHAPE"
-
-sim_classic_cp_tail0$feature_type <- sapply(sim_classic_cp_tail0$experiment, function(experiment) { 
-  if(experiment == 'original') {
-    return('relevant')
-  } else {
-    return('irrelevant')
-  }
+w_v_bw_sd <- ddply(sd_test_data, .(mturk_id, category_type, train_type, stim_type), function(s){
+  c(mean_score = mean(s$correct))
 })
+layout(c(1,2))
+bargraph.CI(category_type, mean_score, train_type, data=subset(w_v_bw_sd, stim_type=="LD"), legend=T)
+bargraph.CI(category_type, mean_score, train_type, data=subset(w_v_bw_sd, stim_type=="HD"), legend=T)
+ezANOVA(data=w_v_bw_sd, dv=mean_score, wid=mturk_id, between=.(train_type, stim_type), within=(category_type))
 
-sim_classic_cp_all <- rbind(sim_classic_cp_shape0, sim_classic_cp_tail0)
+#### boundary effects ####
+# looking for boundary-specific expansion and compression
+# pairs that vary on relevant dimension only
+# pairs that vary by only 1 or 2 units on relevant dimension
 
-ezANOVA(data=sim_classic_cp_all,
-        dv = .(mean_score),
-        wid = .(mturk_id),
-        within = .(feature_type, varying_dimension),
-        between = .(stim_type, train_type))
+boundary_sim <- ddply(subset(similarity_test_data, irrelevant_distance==0 & relevant_distance > 0 & relevant_distance < 3),
+                      .(mturk_id, category_type, train_type, stim_type), function(s){
+                        return(c(mean_score=mean(s$sim_score)))
+                      })
+ezANOVA(data=boundary_sim, dv=mean_score, wid=mturk_id, between=.(train_type, stim_type), within=(category_type))
 
-xab_classic_cp_shape0 <- ddply(filterdata_all[filterdata_all$trial_type=="xab" & filterdata_all$xdist==0,],
-                              .(mturk_id, train_type, stim_type, experiment),
-                              function(subset)with(subset, c(mean_score = mean(correct))))
+boundary_xab <- ddply(subset(xab_test_data, irrelevant_distance==0 & relevant_distance > 0 & relevant_distance < 3),
+                      .(mturk_id, category_type, train_type, stim_type), function(s){
+                        return(c(mean_score=mean(s$correct)))
+                      })
+ezANOVA(data=boundary_xab, dv=mean_score, wid=mturk_id, between=.(train_type, stim_type), within=(category_type))
 
-xab_classic_cp_shape0$varying_dimension <- "TAIL"
+boundary_sd <- ddply(subset(sd_test_data, irrelevant_distance==0 & relevant_distance > 0 & relevant_distance < 3),
+                      .(mturk_id, category_type, train_type, stim_type), function(s){
+                        return(c(mean_score=mean(s$correct)))
+                      })
+ezANOVA(data=boundary_sd, dv=mean_score, wid=mturk_id, between=.(train_type, stim_type), within=(category_type))
 
-xab_classic_cp_shape0$feature_type <- sapply(xab_classic_cp_shape0$experiment, function(experiment) { 
-  if(experiment == 'original') {
-    return('irrelevant')
-  } else {
-    return('relevant')
-  }
-})
+#### dimension effects ####
+# looking for acquired distinctiveness and acquired equivalence effects
+# pairs that vary only on relevant or irrelevant dimension
 
-xab_classic_cp_tail0 <- ddply(filterdata_all[filterdata_all$trial_type=="xab" & filterdata_all$ydist==0,],
-                             .(mturk_id, train_type, stim_type, experiment),
-                             function(subset)with(subset, c(mean_score = mean(correct))))
+# similarity
+rel_dimension_sim <- ddply(subset(similarity_test_data, irrelevant_distance==0),
+                       .(mturk_id, train_type, stim_type), function(s){
+                         return(c(mean_score=mean(s$sim_score)))
+                       })
+ezANOVA(data=rel_dimension_sim, dv=mean_score, wid=mturk_id, between=.(train_type, stim_type))
+bargraph.CI(stim_type, mean_score, train_type, data=rel_dimension_sim)
 
-xab_classic_cp_tail0$varying_dimension <- "SHAPE"
+irrel_dimension_sim <- ddply(subset(similarity_test_data, relevant_distance==0),
+                           .(mturk_id, train_type, stim_type), function(s){
+                             return(c(mean_score=mean(s$sim_score)))
+                           })
+ezANOVA(data=irrel_dimension_sim, dv=mean_score, wid=mturk_id, between=.(train_type, stim_type))
+bargraph.CI(stim_type, mean_score, train_type, data=irrel_dimension_sim)
 
-xab_classic_cp_tail0$feature_type <- sapply(xab_classic_cp_tail0$experiment, function(experiment) { 
-  if(experiment == 'original') {
-    return('relevant')
-  } else {
-    return('irrelevant')
-  }
-})
+# xab
+rel_dimension_xab <- ddply(subset(xab_test_data, irrelevant_distance==0),
+                           .(mturk_id, train_type, stim_type), function(s){
+                             return(c(mean_score=mean(s$correct)))
+                           })
+ezANOVA(data=rel_dimension_xab, dv=mean_score, wid=mturk_id, between=.(train_type, stim_type))
+bargraph.CI(stim_type, mean_score, train_type, data=rel_dimension_xab)
 
-xab_classic_cp_all <- rbind(xab_classic_cp_shape0, xab_classic_cp_tail0)
+irrel_dimension_xab <- ddply(subset(xab_test_data, relevant_distance==0),
+                             .(mturk_id, train_type, stim_type), function(s){
+                               return(c(mean_score=mean(s$correct)))
+                             })
+ezANOVA(data=irrel_dimension_xab, dv=mean_score, wid=mturk_id, between=.(train_type, stim_type))
+bargraph.CI(stim_type, mean_score, train_type, data=irrel_dimension_xab)
 
-ezANOVA(data=xab_classic_cp_all,
-        dv = .(mean_score),
-        wid = .(mturk_id),
-        within = .(feature_type, varying_dimension),
-        between = .(stim_type, train_type))
+# sd
+rel_dimension_sd <- ddply(subset(sd_test_data, irrelevant_distance==0),
+                           .(mturk_id, train_type, stim_type), function(s){
+                             return(c(mean_score=mean(s$correct)))
+                           })
+ezANOVA(data=rel_dimension_sd, dv=mean_score, wid=mturk_id, between=.(train_type, stim_type))
+bargraph.CI(stim_type, mean_score, train_type, data=rel_dimension_sd)
 
-bargraph.CI(stim_type, mean_score, train_type, 
-            data = sd_classic_cp_all[sd_classic_cp_all$varying_dimension=="SHAPE" & 
-                                       sd_classic_cp_all$relDimension=="SHAPE",], 
-             main="", ylab="", xlab="", legend = T)
+irrel_dimension_sd <- ddply(subset(sd_test_data, relevant_distance==0),
+                             .(mturk_id, train_type, stim_type), function(s){
+                               return(c(mean_score=mean(s$correct)))
+                             })
+ezANOVA(data=irrel_dimension_sd, dv=mean_score, wid=mturk_id, between=.(train_type, stim_type))
+bargraph.CI(stim_type, mean_score, train_type, data=irrel_dimension_sd)
 
-bargraph.CI(stim_type, mean_score, train_type, 
-            data = sd_classic_cp_all[sd_classic_cp_all$varying_dimension=="TAIL" & 
-                                       sd_classic_cp_all$relDimension=="SHAPE",], 
-            main="", ylab="", xlab="", legend = T)
-
-bargraph.CI(stim_type, mean_score, train_type, 
-            data = sd_classic_cp_all[sd_classic_cp_all$varying_dimension=="TAIL" & 
-                                       sd_classic_cp_all$relDimension=="TAIL",], 
-            main="", ylab="", xlab="", legend = T)
-
-bargraph.CI(stim_type, mean_score, train_type, 
-            data = sd_classic_cp_all[sd_classic_cp_all$varying_dimension=="SHAPE" & 
-                                       sd_classic_cp_all$relDimension=="TAIL",], 
-            main="", ylab="", xlab="", legend = T)
-
-bargraph.CI(stim_type, mean_score, train_type, 
-            data = sim_classic_cp_all[sim_classic_cp_all$varying_dimension=="SHAPE" & 
-                                       sim_classic_cp_all$relDimension=="SHAPE",], 
-            main="", ylab="", xlab="", legend = T)
-
-layout(matrix(1:4, nrow=1))
-bargraph.CI(train_type, mean_score, 
-            data = sim_classic_cp_all[sim_classic_cp_all$relDimension=="SHAPE" & sd_classic_cp_all$varying_dimension=="SHAPE",],  
-            main="SHAPE RELEVANT SHAPE CONSTANT", ylab="", xlab="")
-bargraph.CI(train_type, mean_score, 
-            data = sim_classic_cp_all[sim_classic_cp_all$relDimension=="TAIL" & sd_classic_cp_all$varying_dimension=="TAIL",],  
-            main="TAIL RELEVANT TAIL CONSTANT", ylab="", xlab="")
-bargraph.CI(train_type, mean_score, 
-            data = sim_classic_cp_all[sim_classic_cp_all$relDimension=="SHAPE" & sd_classic_cp_all$varying_dimension=="TAIL",],  
-            main="SHAPE RELEVANT TAIL CONSTANT", ylab="", xlab="")
-bargraph.CI(train_type, mean_score, 
-            data = sim_classic_cp_all[sim_classic_cp_all$relDimension=="TAIL" & sd_classic_cp_all$varying_dimension=="SHAPE",],  
-            main="TAIL RELEVANT SHAPE CONSTANT", ylab="", xlab="")
-
-bargraph.CI(stim_type, mean_score, train_type, 
-            data = sim_classic_cp_all[sim_classic_cp_all$varying_dimension=="TAIL" & 
-                                       sim_classic_cp_all$relDimension=="SHAPE",], 
-            main="", ylab="", xlab="", legend = T)
-
-bargraph.CI(stim_type, mean_score, train_type, 
-            data = sim_classic_cp_all[sim_classic_cp_all$varying_dimension=="TAIL" & 
-                                       sim_classic_cp_all$relDimension=="TAIL",], 
-            main="", ylab="", xlab="", legend = T)
-
-bargraph.CI(stim_type, mean_score, train_type, 
-            data = sim_classic_cp_all[sim_classic_cp_all$varying_dimension=="SHAPE" & 
-                                       sim_classic_cp_all$relDimension=="TAIL",], 
-            main="", ylab="", xlab="", legend = T)
-
-bargraph.CI(stim_type, mean_score, train_type, 
-            data = xab_classic_cp_all[xab_classic_cp_all$varying_dimension=="SHAPE" & 
-                                        xab_classic_cp_all$relDimension=="SHAPE",], 
-            main="", ylab="", xlab="", legend = T)
-
-bargraph.CI(stim_type, mean_score, train_type, 
-            data = xab_classic_cp_all[xab_classic_cp_all$varying_dimension=="TAIL" & 
-                                        xab_classic_cp_all$relDimension=="SHAPE",], 
-            main="", ylab="", xlab="", legend = T)
-
-bargraph.CI(stim_type, mean_score, train_type, 
-            data = xab_classic_cp_all[xab_classic_cp_all$varying_dimension=="TAIL" & 
-                                        xab_classic_cp_all$relDimension=="TAIL",], 
-            main="", ylab="", xlab="", legend = T)
-
-bargraph.CI(stim_type, mean_score, train_type, 
-            data = xab_classic_cp_all[xab_classic_cp_all$varying_dimension=="SHAPE" & 
-                                        xab_classic_cp_all$relDimension=="TAIL",], 
-            main="", ylab="", xlab="", legend = T)
