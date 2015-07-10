@@ -137,3 +137,23 @@ irrel_dimension_sd <- ddply(subset(sd_test_data, relevant_distance==0),
 ezANOVA(data=irrel_dimension_sd, dv=mean_score, wid=mturk_id, between=.(train_type, stim_type))
 bargraph.CI(stim_type, mean_score, train_type, data=irrel_dimension_sd)
 
+
+### dimension effects with dimension as a factor
+
+rel_dimension_xab$dimension <- 'relevant'
+irrel_dimension_xab$dimension <- 'irrelevant'
+xab_dim_as_factor <- rbind(rel_dimension_xab,irrel_dimension_xab)
+ezANOVA(data=xab_dim_as_factor, dv=mean_score, wid=mturk_id, between=.(train_type,stim_type), within=.(dimension))
+
+rel_dimension_sd$dimension <- 'relevant'
+irrel_dimension_sd$dimension <- 'irrelevant'
+sd_dim_as_factor <- rbind(rel_dimension_sd,irrel_dimension_sd)
+ezANOVA(data=sd_dim_as_factor, dv=mean_score, wid=mturk_id, between=.(train_type,stim_type), within=.(dimension))
+
+rel_dimension_sim$dimension <- 'relevant'
+irrel_dimension_sim$dimension <- 'irrelevant'
+sim_dim_as_factor <- rbind(rel_dimension_sim,irrel_dimension_sim)
+ezANOVA(data=sim_dim_as_factor, dv=mean_score, wid=mturk_id, between=.(train_type,stim_type), within=.(dimension))
+
+
+
